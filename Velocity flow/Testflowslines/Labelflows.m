@@ -18,11 +18,12 @@ function varargout = Labelflows(varargin)
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
+
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
 % Edit the above text to modify the response to help Labelflows
 
-% Last Modified by GUIDE v2.5 20-Mar-2019 20:40:59
+% Last Modified by GUIDE v2.5 22-Mar-2019 12:40:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -60,16 +61,23 @@ set(hObject,'WindowButtonMotionFcn',@MouseMove);
 handles.p0s = [];
 handles.p1s = [];
 handles.p2s = [];
+handles.ids = [];
 
-handles.p0 = drawpolyline(handles.imax,'Position',[0 0],'Visible','off','LineWidth',1,'Color','r');
-handles.p1 = drawpolyline(handles.imax,'Position',[0 0],'Visible','off','LineWidth',1,'Color','r');
-handles.p2 = drawpolyline(handles.imax,'Position',[0 0],'Visible','off','LineWidth',1,'Color','r');
+handles.p0 = drawpolyline(handles.imax,'Position',[0 0],'Visible','off',...
+    'LineWidth',1,'Color','r');
+handles.p1 = drawpolyline(handles.imax,'Position',[0 0],'Visible','off',...
+    'LineWidth',1,'Color','r');
+handles.p2 = drawpolyline(handles.imax,'Position',[0 0],'Visible','off',...
+    'LineWidth',1,'Color','r');
+handles.cid = 1;
 
 handles.waittxt.Visible = 'Off';
 handles.savetxt.Visible = 'Off';
 set(hObject,'KeyPressFcn',@KeyPressed);
 handles.colors = ['b','r','y','c','m'];
 handles.ccol = 1;
+handles.ct = 1;
+handles.cellsvis = 0;
 % Update handles structure
 guidata(hObject, handles);
 
@@ -95,10 +103,25 @@ handles = guidata(hObject);
 
 if eventdata.Key == '1'
     plotim(handles,0)
+    handles.ct = 0;
+    guidata(hObject,handles);
+    try
+        updatecells(hObject,eventdata,handles);
+    end
 elseif eventdata.Key == '2'
     plotim(handles,1)
+    handles.ct = 1;
+    guidata(hObject,handles);
+    try
+        updatecells(hObject,eventdata,handles);
+    end
 elseif eventdata.Key == '3'
     plotim(handles,2)
+    handles.ct = 2;
+    guidata(hObject,handles);
+    try
+        updatecells(hObject,eventdata,handles);
+    end
 end
 
 %Asign point positions and advance frame.
@@ -140,22 +163,61 @@ end
 if eventdata.Key == "space"
     if all(numel(handles.p0.Position)==numel(handles.p1.Position),...
             numel(handles.p0.Position)==numel(handles.p2.Position))
+        %Check cell orientations.
+        dp0p1 = handles.p0.Position - handles.p1.Position;
+        dxp0p1 = sqrt(dp0p1(:,1).^2 + dp0p1(:,2).^2);
+        
+        drp0p1 = handles.p0.Position - flipud(handles.p1.Position);
+        dxrp0p1 = sqrt(drp0p1(:,1).^2 + drp0p1(:,2).^2);
+
+        if max(dxp0p1)>max(dxrp0p1)
+            handles.p1.Position = flipud(handles.p1.Position);
+        end
+        
+        dp1p2 = handles.p1.Position - handles.p2.Position;
+        dxp1p2 = sqrt(dp1p2(:,1).^2 + dp1p2(:,2).^2);
+        
+        drp1p2 = handles.p1.Position - flipud(handles.p2.Position);
+        dxrp1p2 = sqrt(drp1p2(:,1).^2 + drp1p2(:,2).^2);
+
+        if max(dxp1p2)>max(dxrp1p2)
+            handles.p2.Position = flipud(handles.p2.Position);
+        end
+        
+        
+        %Save cell positions into ongoing array.
         handles.p0s = [handles.p0s; [handles.p0.Position]];
         handles.p1s = [handles.p1s; [handles.p1.Position]];
         handles.p2s = [handles.p2s; [handles.p2.Position]];
+        handles.ids = [handles.ids;...
+            handles.cid*ones(size(handles.p0.Position(:,1)))];
+        handles.cid = handles.cid+1;
+        
+        handles.ids(handles.p0s(:,1)==0) = [];
+        handles.p0s(handles.p0s(:,1)==0) = [];
+        handles.p1s(handles.p1s(:,1)==0) = [];
+        handles.p2s(handles.p2s(:,1)==0) = [];
+        
+        
+        %Hide the cells to be revealed again when more point are added.
         handles.p0.Visible = 'off';
         handles.p1.Visible = 'off';
         handles.p2.Visible = 'off';
         handles.p0.Position = [0 0];
         handles.p1.Position = [0 0];
         handles.p2.Position = [0 0];
-        plotim(handles,0);
+        
+        plotim(handles,2);
+        handles.cellsvis = 1;
+        guidata(hObject,handles);
+        plotcells(hObject,eventdata,handles);
+        handles = guidata(hObject);
     end
 end
 
 uistack(handles.Oflowax,'top');
 uistack(handles.Lflowax,'top');
-
+uistack(handles.cellsax,'top');
 guidata(hObject,handles);
 
 function MouseMove(hObject, eventdata)
@@ -208,12 +270,14 @@ drawnow
 p0s = handles.p0s;
 p1s = handles.p1s;
 p2s = handles.p2s;
+ids = handles.ids;
 
 name = strsplit(handles.fpath,'/');
-fold = name{end-2};
+fold = handles.folderpath.String;
 name = name{end-1};
 t = handles.t;
-save([fold 'Labeledflows/flows' name 't' num2str(t)],'p0s','p1s','p2s');
+[~,~,~] = mkdir([fold '/Labeledflows/']);
+save([fold '/Labeledflows/flows' name 't' num2str(t)],'p0s','p1s','p2s','ids');
 handles.savetxt.Visible = 'off';
 
 % --- Executes on button press in Lshow.
@@ -228,8 +292,10 @@ y1s = handles.p1s(:,2);
 x2s = handles.p2s(:,1);
 y2s = handles.p2s(:,2);
 uistack(handles.Lflowax,'top');
-quiver(x0s,y0s,x1s-x0s,y1s-y0s,'Color','g','ShowArrowHead','off','LineWidth',1,'AutoScale','off','Parent',handles.Lflowax);
-quiver(x1s,y1s,x2s-x1s,y2s-y1s,'Color','g','LineWidth',1,'AutoScale','off','Parent',handles.Lflowax);
+quiver(x0s,y0s,x1s-x0s,y1s-y0s,'Color','g','ShowArrowHead','off',...
+    'LineWidth',1,'AutoScale','off','Parent',handles.Lflowax);
+quiver(x1s,y1s,x2s-x1s,y2s-y1s,'Color','g','LineWidth',1,...
+    'AutoScale','off','Parent',handles.Lflowax);
 
 
 % --- Executes on button press in Oshow.
@@ -240,7 +306,9 @@ function Oshow_Callback(hObject, eventdata, handles)
 if isempty(handles.testflow)
     handles.waittxt.Visible = 'on';
     drawnow
-    handles.testflow = calctestflow(handles.fpath,handles.t,str2double(handles.nf.String),str2double(handles.gf.String),str2double(handles.imf.String));
+    handles.testflow = calctestflow(handles.fpath,handles.t,...
+        str2double(handles.nf.String),str2double(handles.gf.String),...
+        str2double(handles.imf.String));
     handles.waittxt.Visible = 'off';
 end
 guidata(hObject,handles);
@@ -255,8 +323,11 @@ s = str2double(handles.scale.String);
 uistack(handles.Oflowax,'top');
 col = handles.colors(mod(handles.ccol-1,numel(handles.colors))+1);
 handles.ccol = handles.ccol+1;
-quiver(x1s,y1s,-s*flow.Vx(inds),-s*flow.Vy(inds),'Color',col,'ShowArrowHead','off','LineWidth',1,'AutoScale','off','Parent',handles.Oflowax);
-quiver(x1s,y1s,s*flow.Vx(inds),s*flow.Vy(inds),'Color',col,'LineWidth',1,'AutoScale','off','Parent',handles.Oflowax);
+quiver(x1s,y1s,-s*flow.Vx(inds),-s*flow.Vy(inds),'Color',col,...
+    'ShowArrowHead','off','LineWidth',1,'AutoScale','off',...
+    'Parent',handles.Oflowax);
+quiver(x1s,y1s,s*flow.Vx(inds),s*flow.Vy(inds),'Color',col,...
+    'LineWidth',1,'AutoScale','off','Parent',handles.Oflowax);
 guidata(hObject,handles);
 
 % --- Executes on button press in Ocalc.
@@ -266,7 +337,9 @@ function Ocalc_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.waittxt.Visible = 'On';
 drawnow
-handles.testflow = calctestflow(handles.fpath,handles.t,str2double(handles.nf.String),str2double(handles.gf.String),str2double(handles.imf.String));
+handles.testflow = calctestflow(handles.fpath,handles.t,...
+    str2double(handles.nf.String),str2double(handles.gf.String),...
+    str2double(handles.imf.String));
 handles.waittxt.Visible = 'off';
 
 guidata(hObject,handles);
@@ -302,7 +375,15 @@ handles.Oflowax.Visible = 'off';
 handles.Oflowax.YDir = 'reverse';
 hold(handles.Oflowax,'on');
 
-folders = dir('/Users/kcopenhagen/Documents/Data/Monolayer/High frame rate');
+handles.cellsax.XLim = [X-49 X+50];
+handles.cellsax.YLim = [Y-49 Y+50];
+handles.cellsax.XLimMode = 'manual';
+handles.cellsax.YLimMode = 'manual';
+handles.cellsax.Visible = 'off';
+handles.cellsax.YDir = 'reverse';
+hold(handles.cellsax,'on');
+
+folders = dir(handles.folderpath.String);
 dirFlags = [folders.isdir];
 folders = folders(dirFlags);
 folders(1:2) = [];
@@ -312,6 +393,7 @@ fpath = [folders(f).folder '/' folders(f).name '/'];
 files = dir([fpath 'Laser/']);
 dirFlags = [files.isdir];
 files = files(~dirFlags);
+
 N = numel(files);
 t = randi(N-10,1);
 %t = 10;
@@ -341,31 +423,8 @@ handles.testflow = [];
 handles.p0s = [];
 handles.p1s = [];
 handles.p2s = [];
+handles.ids = [];
 guidata(hObject,handles);
-
-
-
-function edit1_Callback(hObject, eventdata, handles)
-% hObject    handle to edit1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit1 as text
-%        str2double(get(hObject,'String')) returns contents of edit1 as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
 
 
 function nf_Callback(hObject, eventdata, handles)
@@ -385,7 +444,8 @@ function nf_CreateFcn(hObject, eventdata, handles)
 
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+if ispc && isequal(get(hObject,'BackgroundColor'),...
+        get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
@@ -406,7 +466,8 @@ function imf_CreateFcn(hObject, eventdata, handles)
 
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+if ispc && isequal(get(hObject,'BackgroundColor'),...
+        get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
@@ -429,7 +490,8 @@ function gf_CreateFcn(hObject, eventdata, handles)
 
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+if ispc && isequal(get(hObject,'BackgroundColor'),...
+        get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
@@ -448,8 +510,6 @@ function Oclear_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 cla(handles.Oflowax);
 
-
-
 function scale_Callback(hObject, eventdata, handles)
 % hObject    handle to scale (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -467,7 +527,8 @@ function scale_CreateFcn(hObject, eventdata, handles)
 
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+if ispc && isequal(get(hObject,'BackgroundColor'),...
+        get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
@@ -480,3 +541,113 @@ function clearcurrent_Callback(hObject, eventdata, handles)
 handles.p0.Position = [0 0];
 handles.p1.Position = [0 0];
 handles.p2.Position = [0 0];
+
+
+
+function folderpath_Callback(hObject, eventdata, handles)
+% hObject    handle to folderpath (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of folderpath as text
+%        str2double(get(hObject,'String')) returns contents of folderpath as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function folderpath_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to folderpath (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'),...
+        get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% --- Executes on button press in selectfolder.
+function selectfolder_Callback(hObject, eventdata, handles)
+% hObject    handle to selectfolder (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+folder = uigetdir(handles.folderpath.String);
+handles.folderpath.String = [folder '/'];
+
+% --- Executes on button press in showcellsbut.
+function showcellsbut_Callback(hObject, eventdata, handles)
+% hObject    handle to showcellsbut (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.cellsvis = 1;
+guidata(hObject,handles);
+plotcells(hObject,eventdata,handles);
+
+% --- Executes on button press in hidecellsbut.
+function hidecellsbut_Callback(hObject, eventdata, handles)
+% hObject    handle to hidecellsbut (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.cellsvis = 0;
+guidata(hObject,handles);
+cla(handles.cellsax);
+
+function plotcells(hObject, eventdata, handles)
+cla(handles.cellsax);
+t = handles.ct;
+x = [handles.p0s(:,1); handles.p1s(:,1); handles.p2s(:,1)];
+y = [handles.p0s(:,2); handles.p1s(:,2); handles.p2s(:,2)];
+z = zeros(size(x));
+ids = [handles.ids; handles.ids; handles.ids];
+
+%Use ids to find the ends of cells where it changes numbers.
+%Set alphas to one everywhere except the ends of cells.
+idst = [ids(2:end); ids(1)];
+dids = idst-ids;
+
+alphas = ones(size(ids));
+alphas(dids~=0) = 0;
+
+N = numel(unique(ids));
+cellcols = rand(N,3);
+colt = cellcols(ids,:);
+
+col = [colt(:,1)'; colt(:,1)'];
+col = cat(3,col,[colt(:,2)'; colt(:,2)']);
+col = cat(3,col,[colt(:,3)'; colt(:,3)']);
+
+%Set alphas of cells at not the current time to zero.
+Np = numel(ids)/3;
+idx = find(ids);
+alphas((floor((idx-1)/Np)-t)~=0)=0;
+
+handles.s = surface([x';x'],[y';y'],[z';z'],col,...
+        'alphadata',[alphas';alphas'],...
+        'facecol','no',...
+        'edgecol','flat',...
+        'edgealpha','flat',...
+        'linew',2,...
+        'Parent',handles.cellsax);
+guidata(hObject,handles);
+
+function updatecells(hObject,eventdata,handles)
+
+t = handles.ct;
+
+%Use ids to find the ends of cells where it changes numbers.
+%Set alphas to one everywhere except the ends of cells.
+ids = [handles.ids; handles.ids; handles.ids];
+idst = [ids(2:end); ids(1)];
+dids = idst-ids;
+
+alphas = ones(size(ids));
+alphas(dids~=0) = 0;
+
+%Set alphas of cells at not the current time to zero.
+Np = numel(ids)/3;
+idx = find(ids);
+alphas((floor((idx-1)/Np)-t)~=0)=0;
+if handles.cellsvis == 0
+    alphas = zeros(size(ids));
+end
+handles.s.AlphaData = [alphas';alphas'];
