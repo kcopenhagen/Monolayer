@@ -78,6 +78,7 @@ handles.colors = ['b','r','y','c','m'];
 handles.ccol = 1;
 handles.ct = 1;
 handles.cellsvis = 0;
+handles.clrerr = 1;
 % Update handles structure
 guidata(hObject, handles);
 
@@ -124,6 +125,31 @@ elseif eventdata.Key == '3'
     end
 end
 
+if eventdata.Key == 'x'
+    if handles.ct == 2
+        plotim(handles,0)
+        handles.ct = 0;
+        guidata(hObject,handles);
+        try
+            updatecells(hObject,eventdata,handles);
+        end
+    elseif handles.ct == 0
+        plotim(handles,1)
+        handles.ct = 1;
+        guidata(hObject,handles);
+        try
+            updatecells(hObject,eventdata,handles);
+        end
+    elseif handles.ct == 1
+        plotim(handles,2)
+        handles.ct = 2;
+        guidata(hObject,handles);
+        try
+            updatecells(hObject,eventdata,handles);
+        end
+    end
+end
+        
 %Asign point positions and advance frame.
 if eventdata.Key == 'q'
     handles.p1.Visible = 'off';
@@ -160,9 +186,44 @@ if eventdata.Key == 'e'
     end
 end
 
+if eventdata.Key == 'c'
+    if handles.ct == 0
+        handles.p1.Visible = 'off';
+        handles.p2.Visible = 'off';
+        C = get(handles.imax,'CurrentPoint');
+        handles.p0.Position = [handles.p0.Position; [C(1,1) C(1,2)]];
+        handles.p0.Position(handles.p0.Position(:,1)==0,:) = [];
+        handles.p0.Visible = 'on';
+        for i = 1:numel(handles.p0.NodeChildren)-4
+            handles.p0.NodeChildren(i).Size = 3;
+        end
+    elseif handles.ct == 1
+        handles.p0.Visible = 'off';
+        handles.p2.Visible = 'off';
+        C = get(handles.imax,'CurrentPoint');
+        handles.p1.Position = [handles.p1.Position; [C(1,1) C(1,2)]];
+        handles.p1.Position(handles.p1.Position(:,1)==0,:) = [];
+        handles.p1.Visible = 'on';
+        for i = 1:numel(handles.p1.NodeChildren)-4
+            handles.p1.NodeChildren(i).Size = 3;
+        end
+    elseif handles.ct == 2
+        handles.p0.Visible = 'off';
+        handles.p1.Visible = 'off';
+        C = get(handles.imax,'CurrentPoint');
+        handles.p2.Position = [handles.p2.Position; [C(1,1) C(1,2)]];
+        handles.p2.Position(handles.p2.Position(:,1)==0,:) = [];
+        handles.p2.Visible = 'on';
+        for i = 1:numel(handles.p2.NodeChildren)-4
+            handles.p2.NodeChildren(i).Size = 3;
+        end
+    end
+end
+
 if eventdata.Key == "space"
-    if all(numel(handles.p0.Position)==numel(handles.p1.Position),...
-            numel(handles.p0.Position)==numel(handles.p2.Position))
+    
+    if all([numel(handles.p0.Position)==numel(handles.p1.Position),...
+            numel(handles.p0.Position)==numel(handles.p2.Position)])
         %Check cell orientations.
         dp0p1 = handles.p0.Position - handles.p1.Position;
         dxp0p1 = sqrt(dp0p1(:,1).^2 + dp0p1(:,2).^2);
@@ -212,12 +273,30 @@ if eventdata.Key == "space"
         guidata(hObject,handles);
         plotcells(hObject,eventdata,handles);
         handles = guidata(hObject);
+    else
+        handles.errortxt.String = "Inequal number of points per frame.";
+        handles.clrerr = 0;
+    end
+end
+
+if eventdata.Key == "backspace"
+    if handles.ct == 0
+        handles.p0.Position(end,:) = [];
+    elseif handles.ct == 1
+        handles.p1.Position(end,:) = [];
+    elseif handles.ct == 2
+        handles.p2.Position(end,:) = [];
     end
 end
 
 uistack(handles.Oflowax,'top');
 uistack(handles.Lflowax,'top');
 uistack(handles.cellsax,'top');
+if handles.clrerr == 1
+    handles.errortxt.String = " ";
+end
+handles.clrerr = 1;
+
 guidata(hObject,handles);
 
 function MouseMove(hObject, eventdata)
@@ -279,6 +358,7 @@ t = handles.t;
 [~,~,~] = mkdir([fold '/Labeledflows/']);
 save([fold '/Labeledflows/flows' name 't' num2str(t)],'p0s','p1s','p2s','ids');
 handles.savetxt.Visible = 'off';
+handles.errortxt.String = ['Data saved to ' fold '/Labeledflows/flows' name 't' num2str(t)]; 
 
 % --- Executes on button press in Lshow.
 function Lshow_Callback(hObject, eventdata, handles)
@@ -292,10 +372,27 @@ y1s = handles.p1s(:,2);
 x2s = handles.p2s(:,1);
 y2s = handles.p2s(:,2);
 uistack(handles.Lflowax,'top');
-quiver(x0s,y0s,x1s-x0s,y1s-y0s,'Color','g','ShowArrowHead','off',...
-    'LineWidth',1,'AutoScale','off','Parent',handles.Lflowax);
-quiver(x1s,y1s,x2s-x1s,y2s-y1s,'Color','g','LineWidth',1,...
-    'AutoScale','off','Parent',handles.Lflowax);
+
+x0s = normalize_units(hObject,handles,x0s,'x');
+x1s = normalize_units(hObject,handles,x1s,'x');
+x2s = normalize_units(hObject,handles,x2s,'x');
+y0s = normalize_units(hObject,handles,y0s,'y');
+y1s = normalize_units(hObject,handles,y1s,'y');
+y2s = normalize_units(hObject,handles,y2s,'y');
+
+for i = 1:numel(x0s)
+    annotation('line',[x0s(i) x1s(i)],[y0s(i) y1s(i)],'Color','r',...
+        'LineWidth',1);
+    annotation('arrow',[x1s(i) x2s(i)],[y1s(i) y2s(i)],...
+        'headStyle','cback1','HeadLength',6,'HeadWidth',6,'Color','r',...
+        'LineWidth',1);
+end
+% quiver(x0s,y0s,x1s-x0s,y1s-y0s,'Color','r','ShowArrowHead','off',...
+%     'LineWidth',1,'AutoScale','off','Parent',handles.Lflowax,...
+%     'MaxHeadSize',0.1);
+% quiver(x1s,y1s,x2s-x1s,y2s-y1s,'Color','r','LineWidth',1,...
+%     'AutoScale','off','Parent',handles.Lflowax,...
+%     'MaxHeadSize',0.1);
 
 
 % --- Executes on button press in Oshow.
@@ -321,13 +418,28 @@ sz = size(flow.Vx);
 inds = sub2ind(sz,round(y1s),round(x1s));
 s = str2double(handles.scale.String);
 uistack(handles.Oflowax,'top');
-col = handles.colors(mod(handles.ccol-1,numel(handles.colors))+1);
+col = rand([3,1]);
 handles.ccol = handles.ccol+1;
-quiver(x1s,y1s,-s*flow.Vx(inds),-s*flow.Vy(inds),'Color',col,...
-    'ShowArrowHead','off','LineWidth',1,'AutoScale','off',...
-    'Parent',handles.Oflowax);
-quiver(x1s,y1s,s*flow.Vx(inds),s*flow.Vy(inds),'Color',col,...
-    'LineWidth',1,'AutoScale','off','Parent',handles.Oflowax);
+x0s = x1s - s*flow.Vx(inds);
+y0s = y1s - s*flow.Vy(inds);
+x2s = x1s + s*flow.Vx(inds);
+y2s = y1s + s*flow.Vy(inds);
+
+
+x0s = normalize_units(hObject,handles,x0s,'x');
+x1s = normalize_units(hObject,handles,x1s,'x');
+x2s = normalize_units(hObject,handles,x2s,'x');
+y0s = normalize_units(hObject,handles,y0s,'y');
+y1s = normalize_units(hObject,handles,y1s,'y');
+y2s = normalize_units(hObject,handles,y2s,'y');
+
+for i = 1:numel(x0s)
+    %annotation('line',[x0s(i) x1s(i)],[y0s(i) y1s(i)],'Color',col);
+    annotation('arrow',[x0s(i) x2s(i)],[y0s(i) y2s(i)],...
+        'headStyle','cback1','HeadLength',6,'HeadWidth',6,'Color',col,...
+        'LineWidth',1);
+end
+
 guidata(hObject,handles);
 
 % --- Executes on button press in Ocalc.
@@ -383,7 +495,7 @@ handles.cellsax.Visible = 'off';
 handles.cellsax.YDir = 'reverse';
 hold(handles.cellsax,'on');
 
-folders = dir(handles.folderpath.String);
+folders = dir([handles.folderpath.String '/Data/']);
 dirFlags = [folders.isdir];
 folders = folders(dirFlags);
 folders(1:2) = [];
@@ -424,6 +536,7 @@ handles.p0s = [];
 handles.p1s = [];
 handles.p2s = [];
 handles.ids = [];
+handles.cid = 1;
 guidata(hObject,handles);
 
 
@@ -501,7 +614,7 @@ function Lclear_Callback(hObject, eventdata, handles)
 % hObject    handle to Lclear (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-cla(handles.Lflowax);
+delete(findall(gcf,'type','annotation'));
 
 % --- Executes on button press in Oclear.
 function Oclear_Callback(hObject, eventdata, handles)
@@ -651,3 +764,25 @@ if handles.cellsvis == 0
     alphas = zeros(size(ids));
 end
 handles.s.AlphaData = [alphas';alphas'];
+
+function xn = normalize_units(hObject,handles,x,axisdir)
+    figpos = get(gcf,'Position');
+    axpost = handles.Lflowax.Position;
+    if axisdir == 'x'
+        lims = handles.cellsax.XLim;
+        w = figpos(3);
+        axpos = axpost(1);
+        wax = axpost(3);
+        fax = (x - lims(1))/(lims(2)-lims(1));
+
+    elseif axisdir == 'y'
+        lims = handles.cellsax.YLim;
+        w = figpos(4);
+        axpos = axpost(2);
+        wax = axpost(4);
+        fax = 1-(x - lims(1))/(lims(2)-lims(1));
+    end
+    
+    
+    xn = wax/w*fax + axpos/w;
+    
