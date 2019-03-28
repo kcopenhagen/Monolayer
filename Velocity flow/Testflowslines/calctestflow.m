@@ -9,7 +9,7 @@ function flow = calctestflow(fpath,tt,nf,gf,imf)
 %     gf = 13;
 %     imf = 1;
 
-    opticFlow = opticalFlowLKDoG('GradientFilterSigma',gf,'ImageFilterSigma',imf,'NumFrames',nf,'NoiseThreshold',0.0001);
+    opticFlow = opticalFlowLKDoG('GradientFilterSigma',gf,'ImageFilterSigma',imf,'NumFrames',nf,'NoiseThreshold',0.0000001);
 
     for t = tt-(nf+1)/2:tt+(nf+1)/2
         l = laserdata(fpath,t);

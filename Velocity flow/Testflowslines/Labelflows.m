@@ -23,7 +23,7 @@ function varargout = Labelflows(varargin)
 
 % Edit the above text to modify the response to help Labelflows
 
-% Last Modified by GUIDE v2.5 22-Mar-2019 12:40:42
+% Last Modified by GUIDE v2.5 27-Mar-2019 17:13:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -74,9 +74,7 @@ handles.cid = 1;
 handles.waittxt.Visible = 'Off';
 handles.savetxt.Visible = 'Off';
 set(hObject,'KeyPressFcn',@KeyPressed);
-handles.colors = ['b','r','y','c','m'];
-handles.ccol = 1;
-handles.ct = 1;
+handles.ct = 0;
 handles.cellsvis = 0;
 handles.clrerr = 1;
 % Update handles structure
@@ -96,8 +94,6 @@ function varargout = Labelflows_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-
-
 function KeyPressed(hObject, eventdata)
 %Functionality for when various keys are pressed.
 handles = guidata(hObject);
@@ -109,6 +105,9 @@ if eventdata.Key == '1'
     try
         updatecells(hObject,eventdata,handles);
     end
+    handles.n0.FontWeight = 'bold';
+    handles.n1.FontWeight = 'normal';
+    handles.n2.FontWeight = 'normal';
 elseif eventdata.Key == '2'
     plotim(handles,1)
     handles.ct = 1;
@@ -116,6 +115,9 @@ elseif eventdata.Key == '2'
     try
         updatecells(hObject,eventdata,handles);
     end
+    handles.n0.FontWeight = 'normal';
+    handles.n1.FontWeight = 'bold';
+    handles.n2.FontWeight = 'normal';
 elseif eventdata.Key == '3'
     plotim(handles,2)
     handles.ct = 2;
@@ -123,6 +125,10 @@ elseif eventdata.Key == '3'
     try
         updatecells(hObject,eventdata,handles);
     end
+    handles.n0.FontWeight = 'normal';
+    handles.n1.FontWeight = 'normal';
+    handles.n2.FontWeight = 'bold';
+
 end
 
 if eventdata.Key == 'x'
@@ -133,6 +139,9 @@ if eventdata.Key == 'x'
         try
             updatecells(hObject,eventdata,handles);
         end
+        handles.n0.FontWeight = 'bold';
+        handles.n1.FontWeight = 'normal';
+        handles.n2.FontWeight = 'normal';
     elseif handles.ct == 0
         plotim(handles,1)
         handles.ct = 1;
@@ -140,6 +149,9 @@ if eventdata.Key == 'x'
         try
             updatecells(hObject,eventdata,handles);
         end
+        handles.n0.FontWeight = 'normal';
+        handles.n1.FontWeight = 'bold';
+        handles.n2.FontWeight = 'normal';
     elseif handles.ct == 1
         plotim(handles,2)
         handles.ct = 2;
@@ -147,45 +159,13 @@ if eventdata.Key == 'x'
         try
             updatecells(hObject,eventdata,handles);
         end
-    end
-end
-        
-%Asign point positions and advance frame.
-if eventdata.Key == 'q'
-    handles.p1.Visible = 'off';
-    handles.p2.Visible = 'off';
-    C = get(handles.imax,'CurrentPoint');
-    handles.p0.Position = [handles.p0.Position; [C(1,1) C(1,2)]];
-    handles.p0.Position(handles.p0.Position(:,1)==0,:) = [];
-    handles.p0.Visible = 'on';
-    for i = 1:numel(handles.p0.NodeChildren)-4
-        handles.p0.NodeChildren(i).Size = 3;
+        handles.n0.FontWeight = 'normal';
+        handles.n1.FontWeight = 'normal';
+        handles.n2.FontWeight = 'bold';
     end
 end
 
-if eventdata.Key == 'w'
-    handles.p0.Visible = 'off';
-    handles.p2.Visible = 'off';
-    C = get(handles.imax,'CurrentPoint');
-    handles.p1.Position = [handles.p1.Position; [C(1,1) C(1,2)]];
-    handles.p1.Position(handles.p1.Position(:,1)==0,:) = [];
-    handles.p1.Visible = 'on';
-    for i = 1:numel(handles.p1.NodeChildren)-4
-        handles.p1.NodeChildren(i).Size = 3;
-    end
-end
-if eventdata.Key == 'e'
-    handles.p0.Visible = 'off';
-    handles.p1.Visible = 'off';
-    C = get(handles.imax,'CurrentPoint');
-    handles.p2.Position = [handles.p2.Position; [C(1,1) C(1,2)]];
-    handles.p2.Position(handles.p2.Position(:,1)==0,:) = [];
-    handles.p2.Visible = 'on';
-    for i = 1:numel(handles.p2.NodeChildren)-4
-        handles.p2.NodeChildren(i).Size = 3;
-    end
-end
-
+%Add a spline point to current frame.
 if eventdata.Key == 'c'
     if handles.ct == 0
         handles.p1.Visible = 'off';
@@ -197,6 +177,10 @@ if eventdata.Key == 'c'
         for i = 1:numel(handles.p0.NodeChildren)-4
             handles.p0.NodeChildren(i).Size = 3;
         end
+        handles.n0.String = num2str(str2num(handles.n0.String)+1);
+        handles.n0.FontWeight = 'bold';
+        handles.n1.FontWeight = 'normal';
+        handles.n2.FontWeight = 'normal';
     elseif handles.ct == 1
         handles.p0.Visible = 'off';
         handles.p2.Visible = 'off';
@@ -207,6 +191,10 @@ if eventdata.Key == 'c'
         for i = 1:numel(handles.p1.NodeChildren)-4
             handles.p1.NodeChildren(i).Size = 3;
         end
+        handles.n1.String = num2str(str2num(handles.n1.String)+1);
+        handles.n0.FontWeight = 'normal';
+        handles.n1.FontWeight = 'bold';
+        handles.n2.FontWeight = 'normal';
     elseif handles.ct == 2
         handles.p0.Visible = 'off';
         handles.p1.Visible = 'off';
@@ -217,13 +205,20 @@ if eventdata.Key == 'c'
         for i = 1:numel(handles.p2.NodeChildren)-4
             handles.p2.NodeChildren(i).Size = 3;
         end
+        handles.n2.String = num2str(str2num(handles.n2.String)+1);
+        handles.n0.FontWeight = 'normal';
+        handles.n1.FontWeight = 'normal';
+        handles.n2.FontWeight = 'bold';
+        
     end
 end
 
+% Save current cell to ongoing list.
 if eventdata.Key == "space"
     
     if all([numel(handles.p0.Position)==numel(handles.p1.Position),...
-            numel(handles.p0.Position)==numel(handles.p2.Position)])
+            numel(handles.p0.Position)==numel(handles.p2.Position),...
+            handles.p0.Position(1,1)~=0])
         %Check cell orientations.
         dp0p1 = handles.p0.Position - handles.p1.Position;
         dxp0p1 = sqrt(dp0p1(:,1).^2 + dp0p1(:,2).^2);
@@ -251,7 +246,7 @@ if eventdata.Key == "space"
         handles.p1s = [handles.p1s; [handles.p1.Position]];
         handles.p2s = [handles.p2s; [handles.p2.Position]];
         handles.ids = [handles.ids;...
-            handles.cid*ones(size(handles.p0.Position(:,1)))];
+                handles.cid*ones(size(handles.p0.Position(:,1)))];
         handles.cid = handles.cid+1;
         
         handles.ids(handles.p0s(:,1)==0) = [];
@@ -260,7 +255,7 @@ if eventdata.Key == "space"
         handles.p2s(handles.p2s(:,1)==0) = [];
         
         
-        %Hide the cells to be revealed again when more point are added.
+        %Hide the cell to be revealed again when more point are added.
         handles.p0.Visible = 'off';
         handles.p1.Visible = 'off';
         handles.p2.Visible = 'off';
@@ -268,7 +263,6 @@ if eventdata.Key == "space"
         handles.p1.Position = [0 0];
         handles.p2.Position = [0 0];
         
-        plotim(handles,2);
         handles.cellsvis = 1;
         guidata(hObject,handles);
         plotcells(hObject,eventdata,handles);
@@ -277,26 +271,40 @@ if eventdata.Key == "space"
         handles.errortxt.String = "Inequal number of points per frame.";
         handles.clrerr = 0;
     end
+    handles.n0.String = 0;
+    handles.n1.String = 0;
+    handles.n2.String = 0;
 end
 
 if eventdata.Key == "backspace"
     if handles.ct == 0
         handles.p0.Position(end,:) = [];
+        for i = 1:numel(handles.p0.NodeChildren)-4
+            handles.p0.NodeChildren(i).Size = 3;
+        end
+        handles.n0.String = num2str(str2num(handles.n0.String)-1);
+
     elseif handles.ct == 1
         handles.p1.Position(end,:) = [];
+        for i = 1:numel(handles.p1.NodeChildren)-4
+            handles.p1.NodeChildren(i).Size = 3;
+        end
+        handles.n1.String = num2str(str2num(handles.n1.String)-1);
+
     elseif handles.ct == 2
         handles.p2.Position(end,:) = [];
+        for i = 1:numel(handles.p2.NodeChildren)-4
+            handles.p2.NodeChildren(i).Size = 3;
+        end
+        handles.n2.String = num2str(str2num(handles.n2.String)-1);
     end
 end
 
-uistack(handles.Oflowax,'top');
-uistack(handles.Lflowax,'top');
 uistack(handles.cellsax,'top');
 if handles.clrerr == 1
     handles.errortxt.String = " ";
 end
 handles.clrerr = 1;
-
 guidata(hObject,handles);
 
 function MouseMove(hObject, eventdata)
@@ -337,7 +345,6 @@ elseif im == 2
 
 end
 
-
 % --- Executes on button press in Savebut.
 %         Appends current flows to a file.
 function Savebut_Callback(hObject, eventdata, handles)
@@ -371,7 +378,6 @@ x1s = handles.p1s(:,1);
 y1s = handles.p1s(:,2);
 x2s = handles.p2s(:,1);
 y2s = handles.p2s(:,2);
-uistack(handles.Lflowax,'top');
 
 x0s = normalize_units(hObject,handles,x0s,'x');
 x1s = normalize_units(hObject,handles,x1s,'x');
@@ -387,13 +393,6 @@ for i = 1:numel(x0s)
         'headStyle','cback1','HeadLength',6,'HeadWidth',6,'Color','r',...
         'LineWidth',1);
 end
-% quiver(x0s,y0s,x1s-x0s,y1s-y0s,'Color','r','ShowArrowHead','off',...
-%     'LineWidth',1,'AutoScale','off','Parent',handles.Lflowax,...
-%     'MaxHeadSize',0.1);
-% quiver(x1s,y1s,x2s-x1s,y2s-y1s,'Color','r','LineWidth',1,...
-%     'AutoScale','off','Parent',handles.Lflowax,...
-%     'MaxHeadSize',0.1);
-
 
 % --- Executes on button press in Oshow.
 function Oshow_Callback(hObject, eventdata, handles)
@@ -417,9 +416,8 @@ y1s = handles.p1s(:,2);
 sz = size(flow.Vx);
 inds = sub2ind(sz,round(y1s),round(x1s));
 s = str2double(handles.scale.String);
-uistack(handles.Oflowax,'top');
+
 col = rand([3,1]);
-handles.ccol = handles.ccol+1;
 x0s = x1s - s*flow.Vx(inds);
 y0s = y1s - s*flow.Vy(inds);
 x2s = x1s + s*flow.Vx(inds);
@@ -456,6 +454,12 @@ handles.waittxt.Visible = 'off';
 
 guidata(hObject,handles);
 
+% --- Executes on button press in clearflow.
+function clearflow_Callback(hObject, eventdata, handles)
+% hObject    handle to clearflow (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+delete(findall(gcf,'type','annotation'));
 
 % --- Executes on button press in newimbut.
 function newimbut_Callback(hObject, eventdata, handles)
@@ -470,22 +474,6 @@ handles.imax.YLim = [Y-49 Y+50];
 handles.imax.XLimMode = 'manual';
 handles.imax.YLimMode = 'manual';
 hold(handles.imax,'on');
-
-handles.Lflowax.XLim = [X-49 X+50];
-handles.Lflowax.YLim = [Y-49 Y+50];
-handles.Lflowax.XLimMode = 'manual';
-handles.Lflowax.YLimMode = 'manual';
-handles.Lflowax.Visible = 'off';
-handles.Lflowax.YDir = 'reverse';
-hold(handles.Lflowax,'on');
-
-handles.Oflowax.XLim = [X-49 X+50];
-handles.Oflowax.YLim = [Y-49 Y+50];
-handles.Oflowax.XLimMode = 'manual';
-handles.Oflowax.YLimMode = 'manual';
-handles.Oflowax.Visible = 'off';
-handles.Oflowax.YDir = 'reverse';
-hold(handles.Oflowax,'on');
 
 handles.cellsax.XLim = [X-49 X+50];
 handles.cellsax.YLim = [Y-49 Y+50];
@@ -537,8 +525,8 @@ handles.p1s = [];
 handles.p2s = [];
 handles.ids = [];
 handles.cid = 1;
+handles.ct = 0;
 guidata(hObject,handles);
-
 
 function nf_Callback(hObject, eventdata, handles)
 % hObject    handle to nf (see GCBO)
@@ -585,7 +573,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'),...
 end
 
 
-
 function gf_Callback(hObject, eventdata, handles)
 % hObject    handle to gf (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -607,21 +594,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'),...
         get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in Lclear.
-function Lclear_Callback(hObject, eventdata, handles)
-% hObject    handle to Lclear (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-delete(findall(gcf,'type','annotation'));
-
-% --- Executes on button press in Oclear.
-function Oclear_Callback(hObject, eventdata, handles)
-% hObject    handle to Oclear (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-cla(handles.Oflowax);
 
 function scale_Callback(hObject, eventdata, handles)
 % hObject    handle to scale (see GCBO)
@@ -654,7 +626,9 @@ function clearcurrent_Callback(hObject, eventdata, handles)
 handles.p0.Position = [0 0];
 handles.p1.Position = [0 0];
 handles.p2.Position = [0 0];
-
+handles.n0.String = '0';
+handles.n1.String = '0';
+handles.n2.String = '0';
 
 
 function folderpath_Callback(hObject, eventdata, handles)
@@ -767,7 +741,7 @@ handles.s.AlphaData = [alphas';alphas'];
 
 function xn = normalize_units(hObject,handles,x,axisdir)
     figpos = get(gcf,'Position');
-    axpost = handles.Lflowax.Position;
+    axpost = handles.cellsax.Position;
     if axisdir == 'x'
         lims = handles.cellsax.XLim;
         w = figpos(3);
@@ -782,7 +756,6 @@ function xn = normalize_units(hObject,handles,x,axisdir)
         wax = axpost(4);
         fax = 1-(x - lims(1))/(lims(2)-lims(1));
     end
-    
-    
+
     xn = wax/w*fax + axpos/w;
     
