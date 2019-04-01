@@ -30,4 +30,34 @@ for f = 1:numel(files)
         end
         lengths = [lengths; l*XYcal];
     end
+%------------------------------------------------------------------------%
+    
+    xs = p1s(:,1);
+    ys = p1s(:,2);
+    
+    cells = unique(ids);
+    for i = 1:numel(cells)
+        cxs = xs(ids == cells(i));
+        cys = ys(ids == cells(i)); 
+        l = 0;
+        for j = 1:numel(cxs)-1
+            l = l + sqrt((cxs(j+1)-cxs(j))^2+(cys(j+1)-cys(j))^2);
+        end
+        lengths = [lengths; l*XYcal];
+    end
+%------------------------------------------------------------------------%
+    
+    xs = p2s(:,1);
+    ys = p2s(:,2);
+    
+    cells = unique(ids);
+    for i = 1:numel(cells)
+        cxs = xs(ids == cells(i));
+        cys = ys(ids == cells(i)); 
+        l = 0;
+        for j = 1:numel(cxs)-1
+            l = l + sqrt((cxs(j+1)-cxs(j))^2+(cys(j+1)-cys(j))^2);
+        end
+        lengths = [lengths; l*XYcal];
+    end
 end

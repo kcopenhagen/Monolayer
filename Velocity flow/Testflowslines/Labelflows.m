@@ -23,7 +23,7 @@ function varargout = Labelflows(varargin)
 
 % Edit the above text to modify the response to help Labelflows
 
-% Last Modified by GUIDE v2.5 27-Mar-2019 17:13:10
+% Last Modified by GUIDE v2.5 28-Mar-2019 14:36:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -213,6 +213,94 @@ if eventdata.Key == 'c'
     end
 end
 
+if eventdata.Key == 'e'
+    if handles.ct == 0
+        handles.p1.Visible = 'off';
+        handles.p2.Visible = 'off';
+        C = get(handles.imax,'CurrentPoint');
+        if handles.p0.Position(1,1) == 0
+            handles.p0.Position = [C(1,1) C(1,2)];
+        else
+            dx = C(1,1) - handles.p0.Position(end,1);
+            dy = C(1,2) - handles.p0.Position(end,2);
+            dr = sqrt(dx^2+dy^2);
+            np = round(dr/6);
+            pts = (1:np)'/np;
+            if numel(pts>1)
+                handles.p0.Position = [handles.p0.Position;...
+                    pts*dx+handles.p0.Position(end,1)...
+                    pts*dy+handles.p0.Position(end,2)];
+            else
+                handles.errortxt.String = "Points too close together";
+            end
+        end
+        handles.p0.Visible = 'on';
+        for i = 1:numel(handles.p0.NodeChildren)-4
+            handles.p0.NodeChildren(i).Size = 3;
+        end
+        handles.n0.String = num2str(numel(handles.p0.Position(:,1)));
+        handles.n0.FontWeight = 'bold';
+        handles.n1.FontWeight = 'normal';
+        handles.n2.FontWeight = 'normal';
+    elseif handles.ct == 1
+        handles.p0.Visible = 'off';
+        handles.p2.Visible = 'off';
+        C = get(handles.imax,'CurrentPoint');
+        if handles.p1.Position(1,1) == 0
+            handles.p1.Position = [C(1,1) C(1,2)];
+        else
+            dx = C(1,1) - handles.p1.Position(end,1);
+            dy = C(1,2) - handles.p1.Position(end,2);
+            dr = sqrt(dx^2+dy^2);
+            np = round(dr/6);
+            pts = (1:np)'/np;
+            if numel(pts>1)
+                handles.p1.Position = [handles.p1.Position;...
+                    pts*dx+handles.p1.Position(end,1)...
+                    pts*dy+handles.p1.Position(end,2)];
+            else
+                handles.errortxt.String = "Points too close together";
+            end
+        end        
+        handles.p1.Visible = 'on';
+        for i = 1:numel(handles.p1.NodeChildren)-4
+            handles.p1.NodeChildren(i).Size = 3;
+        end
+        handles.n1.String = num2str(numel(handles.p1.Position(:,1)));
+        handles.n0.FontWeight = 'normal';
+        handles.n1.FontWeight = 'bold';
+        handles.n2.FontWeight = 'normal';
+    elseif handles.ct == 2
+        handles.p0.Visible = 'off';
+        handles.p1.Visible = 'off';
+        C = get(handles.imax,'CurrentPoint');
+        if handles.p2.Position(1,1) == 0
+            handles.p2.Position = [C(1,1) C(1,2)];
+        else
+            dx = C(1,1) - handles.p2.Position(end,1);
+            dy = C(1,2) - handles.p2.Position(end,2);
+            dr = sqrt(dx^2+dy^2);
+            np = round(dr/6);
+            pts = (1:np)'/np;
+            if numel(pts>1)
+                handles.p2.Position = [handles.p2.Position;...
+                    pts*dx+handles.p2.Position(end,1)...
+                    pts*dy+handles.p2.Position(end,2)];
+            else
+                handles.errortxt.String = "Points too close together";
+            end
+        end
+        handles.p2.Visible = 'on';
+        for i = 1:numel(handles.p2.NodeChildren)-4
+            handles.p2.NodeChildren(i).Size = 3;
+        end
+        handles.n2.String = num2str(numel(handles.p2.Position(:,1)));
+        handles.n0.FontWeight = 'normal';
+        handles.n1.FontWeight = 'normal';
+        handles.n2.FontWeight = 'bold';
+    end
+end
+
 % Save current cell to ongoing list.
 if eventdata.Key == "space"
     
@@ -267,13 +355,14 @@ if eventdata.Key == "space"
         guidata(hObject,handles);
         plotcells(hObject,eventdata,handles);
         handles = guidata(hObject);
+        handles.n0.String = 0;
+        handles.n1.String = 0;
+        handles.n2.String = 0;
     else
         handles.errortxt.String = "Inequal number of points per frame.";
         handles.clrerr = 0;
     end
-    handles.n0.String = 0;
-    handles.n1.String = 0;
-    handles.n2.String = 0;
+
 end
 
 if eventdata.Key == "backspace"
@@ -305,11 +394,13 @@ if handles.clrerr == 1
     handles.errortxt.String = " ";
 end
 handles.clrerr = 1;
+if eventdata.Key == 'm'
+    handles.movescreenbut.Value = mod(handles.movescreenbut.Value+1,2);
+    handles.CP = get(handles.imax,'CurrentPoint');
+end
 guidata(hObject,handles);
 
-function MouseMove(hObject, eventdata)
-% Defined so that the mouse position is constantly updated (otherwise it 
-%  will only save the last clicked location.
+
 
 function plotim(handles,im)
 axes(handles.imax)
@@ -379,6 +470,29 @@ y1s = handles.p1s(:,2);
 x2s = handles.p2s(:,1);
 y2s = handles.p2s(:,2);
 
+pts = ones(size(x0s));
+xlims = handles.imax.XLim;
+ylims = handles.imax.YLim;
+
+pts(x0s<xlims(1)) = 0;
+pts(x0s>xlims(2)) = 0;
+pts(x1s<xlims(1)) = 0;
+pts(x1s>xlims(2)) = 0;
+pts(x2s<xlims(1)) = 0;
+pts(x2s>xlims(2)) = 0;
+pts(y0s<ylims(1)) = 0;
+pts(y0s>ylims(2)) = 0;
+pts(y1s<ylims(1)) = 0;
+pts(y1s>ylims(2)) = 0;
+pts(y2s<ylims(1)) = 0;
+pts(y2s>ylims(2)) = 0;
+x0s = x0s(pts==1);
+x1s = x1s(pts==1);
+x2s = x2s(pts==1);
+y0s = y0s(pts==1);
+y1s = y1s(pts==1);
+y2s = y2s(pts==1);
+
 x0s = normalize_units(hObject,handles,x0s,'x');
 x1s = normalize_units(hObject,handles,x1s,'x');
 x2s = normalize_units(hObject,handles,x2s,'x');
@@ -422,6 +536,29 @@ x0s = x1s - s*flow.Vx(inds);
 y0s = y1s - s*flow.Vy(inds);
 x2s = x1s + s*flow.Vx(inds);
 y2s = y1s + s*flow.Vy(inds);
+
+pts = ones(size(x0s));
+xlims = handles.imax.XLim;
+ylims = handles.imax.YLim;
+
+pts(x0s<xlims(1)) = 0;
+pts(x0s>xlims(2)) = 0;
+pts(x1s<xlims(1)) = 0;
+pts(x1s>xlims(2)) = 0;
+pts(x2s<xlims(1)) = 0;
+pts(x2s>xlims(2)) = 0;
+pts(y0s<ylims(1)) = 0;
+pts(y0s>ylims(2)) = 0;
+pts(y1s<ylims(1)) = 0;
+pts(y1s>ylims(2)) = 0;
+pts(y2s<ylims(1)) = 0;
+pts(y2s>ylims(2)) = 0;
+x0s = x0s(pts==1);
+x1s = x1s(pts==1);
+x2s = x2s(pts==1);
+y0s = y0s(pts==1);
+y1s = y1s(pts==1);
+y2s = y2s(pts==1);
 
 
 x0s = normalize_units(hObject,handles,x0s,'x');
@@ -759,3 +896,56 @@ function xn = normalize_units(hObject,handles,x,axisdir)
 
     xn = wax/w*fax + axpos/w;
     
+function MouseMove(hObject, eventdata)
+handles = guidata(hObject);
+% Defined so that the mouse position is constantly updated (otherwise it 
+%  will only save the last clicked location.
+if handles.movescreenbut.Value == 1
+    C = get(handles.imax,'CurrentPoint');
+    dx = C(1,1)-handles.CP(1,1);
+    dy = C(1,2)-handles.CP(1,2);
+    movesimage(hObject,eventdata,handles,-dx,-dy);
+    handles.CP = get(handles.imax,'CurrentPoint');
+
+end
+
+guidata(hObject,handles);
+
+    
+function movesimage(hObject,eventdata,handles,dx,dy)
+
+xlims = get(handles.imax,'XLim');
+ylims = get(handles.imax,'YLim');
+
+sz = size(handles.l0);
+
+if xlims(1)+dx>70 && xlims(2)+dx<sz(2)-70
+    xlims = xlims+dx;
+end
+if ylims(1)+dy>70 && ylims(2)+dy<sz(1)-70
+    ylims = ylims+dy;
+end
+
+handles.imax.XLim = xlims;
+handles.imax.YLim = ylims;
+handles.imax.XLimMode = 'manual';
+handles.imax.YLimMode = 'manual';
+hold(handles.imax,'on');
+
+handles.cellsax.XLim = xlims;
+handles.cellsax.YLim = ylims;
+handles.cellsax.XLimMode = 'manual';
+handles.cellsax.YLimMode = 'manual';
+handles.cellsax.Visible = 'off';
+handles.cellsax.YDir = 'reverse';
+hold(handles.cellsax,'on');
+guidata(hObject,handles);
+
+
+% --- Executes on button press in movescreenbut.
+function movescreenbut_Callback(hObject, eventdata, handles)
+% hObject    handle to movescreenbut (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of movescreenbut
