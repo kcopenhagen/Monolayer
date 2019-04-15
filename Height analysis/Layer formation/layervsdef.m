@@ -55,37 +55,17 @@ for f = 1:numel(folders)
             cqs = q(cdefs);
             
             dists = sqrt((laych(i).x-defxs).^2+(laych(i).y-defys).^2);
-            laych(i).nn = min(dists(cqs<0));
-            cln = dists==laych(i).nn;
+            nn = min(dists(cqs<0));
+            cln = dists==nn;
             
+            laych(i).nnx = defxs(cln);
+            laych(i).nny = defys(cln);
+            laych(i).nnd = cds(cln);
             
-            r = [defxs(cln)-laych(i).x,defys(cln)-laych(i).y];
-            dt1 = cds(cln,:);
-            dt2 = [cds(cln,1)*cos(2*pi/3)-cds(cln,2)*sin(2*pi/3), ...
-                cds(cln,1)*sin(2*pi/3)+cds(cln,2)*cos(2*pi/3)];
-            dt3 = [cds(cln,1)*cos(4*pi/3)-cds(cln,2)*sin(4*pi/3), ...
-                cds(cln,1)*sin(4*pi/3)+cds(cln,2)*cos(4*pi/3)];   
-            
-            nnang1 = acos((r(1)*dt1(1)+r(2)*dt1(2))/(sqrt(r(1)^2 ...
-                + r(2)^2)*sqrt(dt1(1)^2+dt1(2)^2)));
-            nnang2 = acos((r(1)*dt2(1)+r(2)*dt2(2))/(sqrt(r(1)^2 ...
-                + r(2)^2)*sqrt(dt2(1)^2+dt2(2)^2)));
-            nnang3 = acos((r(1)*dt3(1)+r(2)*dt3(2))/(sqrt(r(1)^2 ...
-                + r(2)^2)*sqrt(dt3(1)^2+dt3(2)^2)));
-            
-            
-            laych(i).nnang = min([nnang1, nnang2, nnang3]);
-            laych(i).nnor = atan(cds(cln,2)/cds(cln,1));
-            
-            laych(i).np = min(dists(cqs>0));
-            clp = dists==laych(i).np;
-            
-            r = [defxs(clp)-laych(i).x,defys(clp)-laych(i).y];
-            dt = cds(clp,:);
-            
-            laych(i).npang = acos((r(1)*dt(1)+r(2)*dt(2))/(sqrt(r(1)^2 ...
-                + r(2)^2)*sqrt(dt(1)^2+dt(2)^2)));
-            laych(i).npor = atan(cds(clp,2)/cds(clp,1));
+            np = min(dists(cqs>0));
+            clp = dists==np;
+            laych(i).npx = defxs(clp);
+            laych(i).npy = defys(clp);
 
             laych(i).dwall = min([laych(i).x, 1024 - laych(i).x,laych(i).y,768-laych(i).y]);
             if ~isempty(intersect(laych(i).idx,wallidx))
