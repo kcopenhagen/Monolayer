@@ -1,5 +1,6 @@
 function dfield(fpath,t,n)
-    addpath(genpath('../functions'));
+
+    addpath(genpath('../Misc. functions'));
     [~,~,~] = mkdir(fpath,'analysis');
     [~,~,~] = mkdir(fpath,'analysis/dfield/');
     
@@ -13,8 +14,13 @@ function dfield(fpath,t,n)
     dy = zeros(numel(dl),numel(dl));
     dy(:,end/2+1/2) = dl;
 
+    ls = padarray(ls,[1,1],'replicate','both');
+    
     lx = conv2(ls,dx,'same');
     ly = conv2(ls,dy,'same');
+    
+    lx = lx(2:end-1,2:end-1);
+    ly = ly(2:end-1,2:end-1);
 
     J11 = lx.^2;
     J12 = lx.*ly;
