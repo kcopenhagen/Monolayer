@@ -23,7 +23,7 @@ function varargout = Labelflows(varargin)
 
 % Edit the above text to modify the response to help Labelflows
 
-% Last Modified by GUIDE v2.5 28-Mar-2019 14:36:53
+% Last Modified by GUIDE v2.5 04-Apr-2019 12:01:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -46,7 +46,7 @@ end
 
 
 % --- Executes just before Labelflows is made visible.
-function Labelflows_OpeningFcn(hObject, eventdata, handles, varargin)
+function Labelflows_OpeningFcn(hObject, ~, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -69,14 +69,16 @@ handles.p1 = drawpolyline(handles.imax,'Position',[0 0],'Visible','off',...
     'LineWidth',1,'Color','r');
 handles.p2 = drawpolyline(handles.imax,'Position',[0 0],'Visible','off',...
     'LineWidth',1,'Color','r');
-handles.cid = 1;
 
 handles.waittxt.Visible = 'Off';
 handles.savetxt.Visible = 'Off';
 set(hObject,'KeyPressFcn',@KeyPressed);
+set(hObject,'KeyReleaseFcn',@KeyReleased);
 handles.ct = 0;
 handles.cellsvis = 0;
 handles.clrerr = 1;
+handles.drawready = 0;
+handles.ptdr = 6;
 % Update handles structure
 guidata(hObject, handles);
 
@@ -85,7 +87,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = Labelflows_OutputFcn(hObject, eventdata, handles) 
+function varargout = Labelflows_OutputFcn(~, ~, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -97,7 +99,13 @@ varargout{1} = handles.output;
 function KeyPressed(hObject, eventdata)
 %Functionality for when various keys are pressed.
 handles = guidata(hObject);
-
+if handles.drawready == 1
+    draw = 1;
+else
+    draw = 0;
+end
+handles.drawready = 0;
+%Select frame by number.
 if eventdata.Key == '1'
     plotim(handles,0)
     handles.ct = 0;
@@ -131,6 +139,7 @@ elseif eventdata.Key == '3'
 
 end
 
+%Go to next frame.
 if eventdata.Key == 'x'
     if handles.ct == 2
         plotim(handles,0)
@@ -167,53 +176,7 @@ end
 
 %Add a spline point to current frame.
 if eventdata.Key == 'c'
-    if handles.ct == 0
-        handles.p1.Visible = 'off';
-        handles.p2.Visible = 'off';
-        C = get(handles.imax,'CurrentPoint');
-        handles.p0.Position = [handles.p0.Position; [C(1,1) C(1,2)]];
-        handles.p0.Position(handles.p0.Position(:,1)==0,:) = [];
-        handles.p0.Visible = 'on';
-        for i = 1:numel(handles.p0.NodeChildren)-4
-            handles.p0.NodeChildren(i).Size = 3;
-        end
-        handles.n0.String = num2str(str2num(handles.n0.String)+1);
-        handles.n0.FontWeight = 'bold';
-        handles.n1.FontWeight = 'normal';
-        handles.n2.FontWeight = 'normal';
-    elseif handles.ct == 1
-        handles.p0.Visible = 'off';
-        handles.p2.Visible = 'off';
-        C = get(handles.imax,'CurrentPoint');
-        handles.p1.Position = [handles.p1.Position; [C(1,1) C(1,2)]];
-        handles.p1.Position(handles.p1.Position(:,1)==0,:) = [];
-        handles.p1.Visible = 'on';
-        for i = 1:numel(handles.p1.NodeChildren)-4
-            handles.p1.NodeChildren(i).Size = 3;
-        end
-        handles.n1.String = num2str(str2num(handles.n1.String)+1);
-        handles.n0.FontWeight = 'normal';
-        handles.n1.FontWeight = 'bold';
-        handles.n2.FontWeight = 'normal';
-    elseif handles.ct == 2
-        handles.p0.Visible = 'off';
-        handles.p1.Visible = 'off';
-        C = get(handles.imax,'CurrentPoint');
-        handles.p2.Position = [handles.p2.Position; [C(1,1) C(1,2)]];
-        handles.p2.Position(handles.p2.Position(:,1)==0,:) = [];
-        handles.p2.Visible = 'on';
-        for i = 1:numel(handles.p2.NodeChildren)-4
-            handles.p2.NodeChildren(i).Size = 3;
-        end
-        handles.n2.String = num2str(str2num(handles.n2.String)+1);
-        handles.n0.FontWeight = 'normal';
-        handles.n1.FontWeight = 'normal';
-        handles.n2.FontWeight = 'bold';
-        
-    end
-end
 
-if eventdata.Key == 'e'
     if handles.ct == 0
         handles.p1.Visible = 'off';
         handles.p2.Visible = 'off';
@@ -232,6 +195,7 @@ if eventdata.Key == 'e'
                     pts*dy+handles.p0.Position(end,2)];
             else
                 handles.errortxt.String = "Points too close together";
+                handles.clrerr = 0;
             end
         end
         handles.p0.Visible = 'on';
@@ -260,6 +224,7 @@ if eventdata.Key == 'e'
                     pts*dy+handles.p1.Position(end,2)];
             else
                 handles.errortxt.String = "Points too close together";
+                handles.clrerr = 0;
             end
         end        
         handles.p1.Visible = 'on';
@@ -288,6 +253,7 @@ if eventdata.Key == 'e'
                     pts*dy+handles.p2.Position(end,2)];
             else
                 handles.errortxt.String = "Points too close together";
+                handles.clrerr = 0;
             end
         end
         handles.p2.Visible = 'on';
@@ -301,6 +267,147 @@ if eventdata.Key == 'e'
     end
 end
 
+%Mark start of current cell for drawing.
+if eventdata.Key == 's'
+    if handles.ct == 0
+        handles.p1.Visible = 'off';
+        handles.p2.Visible = 'off';
+        C = get(handles.imax,'CurrentPoint');
+        if handles.p0.Position(1,1) == 0
+            handles.p0.Position = [C(1,1) C(1,2)];
+        else
+            handles.errortxt.String = 'Clear current cells first';
+            handles.clrerr = 0;
+        end
+        
+        handles.p0.Visible = 'on';
+        for i = 1:numel(handles.p0.NodeChildren)-4
+            handles.p0.NodeChildren(i).Size = 3;
+        end
+        handles.n0.String = num2str(numel(handles.p0.Position(:,1)));
+        handles.n0.FontWeight = 'bold';
+        handles.n1.FontWeight = 'normal';
+        handles.n2.FontWeight = 'normal';
+    elseif handles.ct == 1
+        if numel(handles.p0.Position)<3
+            handles.errortxt.String = 'Mark cell in frame 1 first';
+            handles.clrerr = 0;
+        else
+            handles.p0.Visible = 'off';
+            handles.p2.Visible = 'off';
+            C = get(handles.imax,'CurrentPoint');
+            if handles.p1.Position(1,1) == 0
+                handles.p1.Position = [C(1,1) C(1,2)];
+            else
+                handles.errortxt.String = 'Clear current cells first';
+                handles.clrerr = 0;            
+            end
+            handles.p1.Visible = 'on';
+            for i = 1:numel(handles.p1.NodeChildren)-4
+                handles.p1.NodeChildren(i).Size = 3;
+            end
+            handles.n1.String = num2str(numel(handles.p1.Position(:,1)));
+            handles.n0.FontWeight = 'normal';
+            handles.n1.FontWeight = 'bold';
+            handles.n2.FontWeight = 'normal';
+        end
+    elseif handles.ct == 2
+        if numel(handles.p0.Position)<3
+            handles.errortxt.String = 'Mark cell in frame 1 first';
+            handles.clrerr = 0;
+        else
+            handles.p0.Visible = 'off';
+            handles.p1.Visible = 'off';
+            C = get(handles.imax,'CurrentPoint');
+            if handles.p2.Position(1,1) == 0
+                handles.p2.Position = [C(1,1) C(1,2)];
+            else
+                handles.errortxt.String = 'Clear current cells first';
+                handles.clrerr = 0;
+            end
+            handles.p2.Visible = 'on';
+            for i = 1:numel(handles.p2.NodeChildren)-4
+                handles.p2.NodeChildren(i).Size = 3;
+            end
+            handles.n2.String = num2str(numel(handles.p2.Position(:,1)));
+            handles.n0.FontWeight = 'normal';
+            handles.n1.FontWeight = 'normal';
+            handles.n2.FontWeight = 'bold';
+        end
+    end
+    guidata(hObject,handles);
+end
+
+%Mark current cell end point for calculating point separation for drawing
+%cells.
+if eventdata.Key == 'f'
+    
+    if handles.ct == 0
+        if numel(handles.p0.Position)==2 && handles.p0.Position(1) ~=0
+            C = get(handles.imax,'CurrentPoint');
+            l = sqrt((C(1,1)-handles.p0.Position(1))^2 ...
+                +(C(1,2)-handles.p0.Position(2))^2);
+            l = l*1.0147;
+            handles.ptdr = l/round(l/6);
+            handles.errortxt.String = ['Approximate number of points: '...
+                num2str(round(l/6)+1)];
+            handles.clrerr = 0;
+        else
+            handles.errortxt.String = "Use 's' to set cell start point.";
+            handles.clrerr = 0;
+        end
+    elseif handles.ct == 1
+        if numel(handles.p1.Position)==2 && handles.p1.Position(1) ~=0
+            if numel(handles.p0.Position)<3
+                handles.errortxt.String = 'Mark cell in frame 1 first';
+                handles.clrerr = 0;
+            else
+                C = get(handles.imax,'CurrentPoint');
+                l = sqrt((C(1,1)-handles.p1.Position(1))^2 ...
+                    +(C(1,2)-handles.p1.Position(2))^2);
+                l = l*1.0147;
+                handles.ptdr = l/(numel(handles.p0.Position(:,1))-1);
+                handles.errortxt.String = ['Approximate point separation: '...
+                    num2str(handles.ptdr) 'pixels'];
+                handles.clrerr = 0;
+            end
+        else
+            handles.errortxt.String = "Use 's' to set cell start point.";
+            handles.clrerr = 0;
+        end
+    elseif handles.ct == 2
+        if numel(handles.p2.Position)==2 && handles.p2.Position(1) ~=0
+            if numel(handles.p0.Position)<3
+                handles.errortxt.String = 'Mark cell in frame 1 first';
+                handles.clrerr = 0;
+            else
+                C = get(handles.imax,'CurrentPoint');
+                l = sqrt((C(1,1)-handles.p2.Position(1))^2 ...
+                    +(C(1,2)-handles.p2.Position(2))^2);
+                l = l*1.0147;
+                handles.ptdr = l/(numel(handles.p0.Position(:,1))-1);
+                handles.errortxt.String = ['Approximate point separation: '...
+                    num2str(handles.ptdr) 'pixels'];
+                handles.clrerr = 0;
+            end
+        else
+            handles.errortxt.String = "Use 's' to set cell start point.";
+            handles.clrerr = 0;
+        end
+    end
+    
+    handles.drawready = 1;
+end
+
+if eventdata.Key == 'd'
+    if draw == 0
+        handles.errortxt.String = "Use 's' and 'f' to set start and finish of cell";
+        handles.clrerr = 0;
+    else
+        handles.DrawCell.Value = 1;
+    end
+end
+    
 % Save current cell to ongoing list.
 if eventdata.Key == "space"
     
@@ -333,9 +440,13 @@ if eventdata.Key == "space"
         handles.p0s = [handles.p0s; [handles.p0.Position]];
         handles.p1s = [handles.p1s; [handles.p1.Position]];
         handles.p2s = [handles.p2s; [handles.p2.Position]];
+        if isempty(handles.ids)
+            cid = 1;
+        else
+            cid = max(handles.ids)+1;
+        end
         handles.ids = [handles.ids;...
-                handles.cid*ones(size(handles.p0.Position(:,1)))];
-        handles.cid = handles.cid+1;
+                cid*ones(size(handles.p0.Position(:,1)))];
         
         handles.ids(handles.p0s(:,1)==0) = [];
         handles.p0s(handles.p0s(:,1)==0) = [];
@@ -389,18 +500,105 @@ if eventdata.Key == "backspace"
     end
 end
 
+if eventdata.Key == 'm'
+    handles.movescreenbut.Value = 1;
+    handles.CP = get(handles.imax,'CurrentPoint');
+end
+
+if eventdata.Key == 'y'
+    if handles.ct == 0
+        pts = handles.p0s;
+    elseif handles.ct == 1
+        pts = handles.p1s;
+    elseif handles.ct == 2
+        pts = handles.p2s;
+    end
+    C = get(handles.imax,'CurrentPoint');
+    drs = sqrt((pts(:,1)-C(1,1)).^2+(pts(:,2)-C(1,2)).^2);
+    delid = handles.ids(drs == min(drs));
+    dels = handles.ids == delid;
+    handles.p0s(dels,:) = [];
+    handles.p1s(dels,:) = [];
+    handles.p2s(dels,:) = [];
+    handles.ids(dels) = [];
+    handles.ids(handles.ids>delid) = handles.ids(handles.ids>delid)-1;
+    guidata(hObject,handles);
+    plotcells(hObject,eventdata,handles);
+end
+
 uistack(handles.cellsax,'top');
 if handles.clrerr == 1
     handles.errortxt.String = " ";
 end
 handles.clrerr = 1;
+
+
+guidata(hObject,handles);
+
+function KeyReleased(hObject, eventdata)
+handles = guidata(hObject);
+
 if eventdata.Key == 'm'
-    handles.movescreenbut.Value = mod(handles.movescreenbut.Value+1,2);
-    handles.CP = get(handles.imax,'CurrentPoint');
+    handles.movescreenbut.Value = 0;
+end
+if eventdata.Key == 'd'
+    handles.DrawCell.Value = 0;
 end
 guidata(hObject,handles);
 
+function MouseMove(hObject, eventdata)
+handles = guidata(hObject);
+% Defined so that the mouse position is constantly updated (otherwise it 
+%  will only save the last clicked location.
+if handles.movescreenbut.Value == 1
+    C = get(handles.imax,'CurrentPoint');
+    dx = C(1,1)-handles.CP(1,1);
+    dy = C(1,2)-handles.CP(1,2);
+    movesimage(hObject,eventdata,handles,-dx,-dy);
+    handles.CP = get(handles.imax,'CurrentPoint');
 
+end
+
+if handles.DrawCell.Value == 1
+    if handles.ct == 0
+        C = get(handles.imax,'CurrentPoint');
+        dx = C(1,1)-handles.p0.Position(end,1);
+        dy = C(1,2)-handles.p0.Position(end,2);
+        dr = sqrt(dx^2+dy^2);
+        if dr > handles.ptdr
+            handles.p0.Position = [handles.p0.Position; C(1,1) C(1,2)];
+        end
+        handles.n0.String = num2str(numel(handles.p0.Position(:,1)));
+        for i = 1:numel(handles.p0.NodeChildren)-4
+            handles.p0.NodeChildren(i).Size = 3;
+        end
+    elseif handles.ct == 1
+        C = get(handles.imax,'CurrentPoint');
+        dx = C(1,1)-handles.p1.Position(end,1);
+        dy = C(1,2)-handles.p1.Position(end,2);
+        dr = sqrt(dx^2+dy^2);
+        if dr > handles.ptdr
+            handles.p1.Position = [handles.p1.Position; C(1,1) C(1,2)];
+        end
+        handles.n1.String = num2str(numel(handles.p1.Position(:,1)));
+        for i = 1:numel(handles.p1.NodeChildren)-4
+            handles.p1.NodeChildren(i).Size = 3;
+        end
+    elseif handles.ct == 2
+        C = get(handles.imax,'CurrentPoint');
+        dx = C(1,1)-handles.p2.Position(end,1);
+        dy = C(1,2)-handles.p2.Position(end,2);
+        dr = sqrt(dx^2+dy^2);
+        if dr > handles.ptdr
+            handles.p2.Position = [handles.p2.Position; C(1,1) C(1,2)];
+        end
+        handles.n2.String = num2str(numel(handles.p2.Position(:,1)));
+        for i = 1:numel(handles.p2.NodeChildren)-4
+            handles.p2.NodeChildren(i).Size = 3;
+        end
+    end
+end
+guidata(hObject,handles);
 
 function plotim(handles,im)
 axes(handles.imax)
@@ -531,7 +729,11 @@ sz = size(flow.Vx);
 inds = sub2ind(sz,round(y1s),round(x1s));
 s = str2double(handles.scale.String);
 
-col = rand([3,1]);
+R = str2double(handles.OflowR.String);
+G = str2double(handles.OflowG.String);
+B = str2double(handles.OflowB.String);
+
+col = [R,G,B];
 x0s = x1s - s*flow.Vx(inds);
 y0s = y1s - s*flow.Vy(inds);
 x2s = x1s + s*flow.Vx(inds);
@@ -639,9 +841,14 @@ l0 = laserdata(fpath,t-1);
 l1 = laserdata(fpath,t);
 l2 = laserdata(fpath,t+1);
 
-% l0 = imsharpen(l0,'Amount',3,'Radius',3);
-% l1 = imsharpen(l1,'Amount',3,'Radius',3);
-% l2 = imsharpen(l2,'Amount',3,'Radius',3);
+% l0 = imsharpen(l0./imgaussfilt(l0,64),'Amount',3,'Radius',3);
+% l1 = imsharpen(l1./imgaussfilt(l1,64),'Amount',3,'Radius',3);
+% l2 = imsharpen(l2./imgaussfilt(l2,64),'Amount',3,'Radius',3);
+
+l0 = l0./imgaussfilt(l0,64);
+l1 = l1./imgaussfilt(l1,64);
+l2 = l2./imgaussfilt(l2,64);
+
 
 l0 = normalise(l0);
 l1 = normalise(l1);
@@ -661,7 +868,6 @@ handles.p0s = [];
 handles.p1s = [];
 handles.p2s = [];
 handles.ids = [];
-handles.cid = 1;
 handles.ct = 0;
 guidata(hObject,handles);
 
@@ -831,6 +1037,7 @@ dids = idst-ids;
 
 alphas = ones(size(ids));
 alphas(dids~=0) = 0;
+alphas(1) = 0;
 
 N = numel(unique(ids));
 cellcols = rand(N,3);
@@ -895,23 +1102,7 @@ function xn = normalize_units(hObject,handles,x,axisdir)
     end
 
     xn = wax/w*fax + axpos/w;
-    
-function MouseMove(hObject, eventdata)
-handles = guidata(hObject);
-% Defined so that the mouse position is constantly updated (otherwise it 
-%  will only save the last clicked location.
-if handles.movescreenbut.Value == 1
-    C = get(handles.imax,'CurrentPoint');
-    dx = C(1,1)-handles.CP(1,1);
-    dy = C(1,2)-handles.CP(1,2);
-    movesimage(hObject,eventdata,handles,-dx,-dy);
-    handles.CP = get(handles.imax,'CurrentPoint');
 
-end
-
-guidata(hObject,handles);
-
-    
 function movesimage(hObject,eventdata,handles,dx,dy)
 
 xlims = get(handles.imax,'XLim');
@@ -949,3 +1140,81 @@ function movescreenbut_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of movescreenbut
+
+
+% --- Executes on button press in DrawCell.
+function DrawCell_Callback(hObject, eventdata, handles)
+% hObject    handle to DrawCell (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of DrawCell
+
+
+
+function OflowR_Callback(hObject, eventdata, handles)
+% hObject    handle to OflowR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of OflowR as text
+%        str2double(get(hObject,'String')) returns contents of OflowR as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function OflowR_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to OflowR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function OflowG_Callback(hObject, eventdata, handles)
+% hObject    handle to OflowG (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of OflowG as text
+%        str2double(get(hObject,'String')) returns contents of OflowG as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function OflowG_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to OflowG (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function OflowB_Callback(hObject, eventdata, handles)
+% hObject    handle to OflowB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of OflowB as text
+%        str2double(get(hObject,'String')) returns contents of OflowB as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function OflowB_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to OflowB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

@@ -1,4 +1,7 @@
 function dir_err = veri_director()
+%Returns an array of the difference in angle between the vector along the
+%cell spline and the calculated director field at the center of each spline
+%segment.
 files = dir('/Users/kcopenhagen/Documents/Data/Monolayer/High frame rate/Labeledflows/*mat');
 dir_err = [];
 for f = 1:numel(files)

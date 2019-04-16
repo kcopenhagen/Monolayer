@@ -1,4 +1,5 @@
 function revperiod = reversal_period
+%Estimates reversal period by dividing total time by number of reversals.
 files = dir('/Users/kcopenhagen/Documents/Data/Monolayer/High frame rate/Labeledflows/*mat');
 revnum = [];
 
