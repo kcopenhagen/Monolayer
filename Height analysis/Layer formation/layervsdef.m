@@ -60,13 +60,14 @@ for f = 1:numel(folders)
             
             laych(i).nnx = defxs(cln);
             laych(i).nny = defys(cln);
-            laych(i).nnd = cds(cln);
+            laych(i).nnd = cds(cln,:);
             
             np = min(dists(cqs>0));
             clp = dists==np;
             laych(i).npx = defxs(clp);
             laych(i).npy = defys(clp);
-
+            laych(i).npd = cds(clp,:);
+            
             laych(i).dwall = min([laych(i).x, 1024 - laych(i).x,laych(i).y,768-laych(i).y]);
             if ~isempty(intersect(laych(i).idx,wallidx))
                 del = [del; i];

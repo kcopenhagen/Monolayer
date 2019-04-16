@@ -13,7 +13,6 @@ for f = 1:numel(files)
     end
 end
 files(del) = [];
-
 try
     lm1 = loaddata(fpath,t-1,'manuallayers','int8');
 catch
