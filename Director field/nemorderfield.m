@@ -1,17 +1,21 @@
 function nemorderfield(fpath,t)
-%Takes in Hlines and outputs the nematic order accross the image.
-% dr is the box size for gridded order parameter in microns.
-% drn is the distance from the center of the box to all neighbors being
-% calculated in the order paramater.
+% Calculates local order field of image in fpath, at time t.
+%    Saves into analysis/order folder as an array of floats.
+
     r = 0.5;
     XYcal = getXYcal(fpath);
     name = sprintf('%06d.bin',t-1);
     [~,~,~] = mkdir([fpath 'analysis/order']);
-    dir = loaddata(fpath,t,'dfield','float');
-
-    sz = size(dir);
+    try
+        dir = loaddata(fpath,t,'dfield','float');
+    catch
+        msgbox(['Run dfield calculations for ' fpath ' at time t = ' t '...']);
+        return
+    end
+    
     rr = round(r/XYcal);
     se = strel('disk',rr);
+    dir = padarray(dir,[ceil(rr),ceil(rr)],'replicate','both');
     nhood = se.Neighborhood/sum(sum(se.Neighborhood));
     vx = cos(2*dir);
     vy = sin(2*dir);
@@ -26,6 +30,8 @@ function nemorderfield(fpath,t)
     l2 = ((a+d)-sqrt((a+d).^2-4*(a.*d-bc.^2)))/2;
     S = max(l1,l2);
 
+    S = S(ceil(rr)+1:end-ceil(rr),ceil(rr)+1:end-ceil(rr));
+    
     fID = fopen([fpath 'analysis/order/' name],'w');
     fwrite(fID,S,'float');
     fclose(fID);
