@@ -249,12 +249,10 @@ if eventdata.Key == "leftarrow"
         handles.ct.String = num2str(nt);
         try
             handles.lays = loaddata(handles.fpath.String,...
-                nt,...
-                'manuallayers','int8');
+                nt,'manuallayers','int8');
         catch
             handles.lays = loaddata(handles.fpath.String...
-                ,nt,...
-                'mlays','int8');
+                ,nt,'mlays','int8');
         end
         handles.lays(handles.lays<0) = 0;
         guidata(hObject,handles);
