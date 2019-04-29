@@ -1,9 +1,7 @@
 function alldfields(datapath)
     n = 13;
     
-    folders = datapath;
-
-    fpath = [uigetdir(folders) '/'];
+    fpath = [uigetdir(datapath) '/'];
     
     files = dir([fpath '/Laser/']);
     dirFlags = [files.isdir];

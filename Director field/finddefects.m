@@ -9,7 +9,7 @@ function adefs = finddefects(fpath, t)
     S = loaddata(fpath,t,'order','float');
     dir = loaddata(fpath,t,'dfield','float');
     lays = loaddata(fpath,t,'manuallayers','int8');
-    CC = bwconncomp(lays==0);
+    CC = bwconncomp(lays<=0);
     P = regionprops(CC,'PixelIdxList','MinorAxisLength');
     P([P.MinorAxisLength]<26) = [];
     
@@ -29,10 +29,13 @@ function adefs = finddefects(fpath, t)
     Centroids = [P.Centroid];
     Centx = round(Centroids(1:2:end-1));
     Centy = round(Centroids(2:2:end));
+    %Exclude defects too close to the wall to define the ring to calculate
+    %charge with.
     nog = ~(Centx<r).*~(Centx>numel(S(1,:))-r).*~(Centy<r).*~(Centy>numel(S(:,1))-r);
     Centx(~nog) = [];
     Centy(~nog) = [];
     
+    %Exclude defects in holes.
     inds = sub2ind(size(S),Centy,Centx);
     validdefs = true(size(Centx));
     validdefs(holes(inds)) = false;
@@ -72,7 +75,10 @@ function adefs = finddefects(fpath, t)
             dnxnydx = dnxnydx(r,r);
             dnxnydy = dnxnydy(r,r);
             dnynydy = dnynydy(r,r);
-            d = [d; [dnxnxdx+dnxnydy dnxnydx+dnynydy]];
+            dx = dnxnxdx+dnxnydy;
+            dy = dnxnydx+dnynydy;
+            dr = sqrt(dx^2+dy^2);
+            d = [d; [dx/dr dy/dr]];
             
         %Calculate direction of negative defects.
         elseif abs(q(i)+0.5) < 0.1
@@ -99,6 +105,7 @@ function adefs = finddefects(fpath, t)
     x = Centx;
     y = Centy;
     adefs = struct('x',num2cell(x'),'y',num2cell(y'),'q',num2cell(q'),'d',num2cell(d,2));
+    adefs([adefs.q]==0) = [];
 end
     
 
