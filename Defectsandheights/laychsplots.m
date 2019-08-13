@@ -7,7 +7,12 @@ for i = 1:numel(laychs)
     dw = laychs(i).dwall;
     dp = sqrt((laychs(i).x-laychs(i).npx)^2+(laychs(i).y-laychs(i).npy)^2);
     dn = sqrt((laychs(i).x-laychs(i).nnx)^2+(laychs(i).y-laychs(i).nny)^2);
-    
+    if isempty(dp)
+        dp = Inf;
+    end
+    if isempty(dn)
+        dn = Inf;
+    end
     if dw < dp && dw < dn
         laychs(i).nearest = 'wall';
     elseif dp < dw && dp < dn
@@ -95,7 +100,8 @@ imnf = zeros(401,401,3);
 % Things to do with creating new layers.
 for i = 1:numel(newlayer)
     imsize = 401;
-    if true%newlayer(i).nearest == "pos"
+    %if true
+    if newlayer(i).nearest == "pos"
         mask = zeros(768,1024);
         mask(newlayer(i).idx) = 1;
         mask = padarray(mask,[(imsize-1)/2 (imsize-1)/2],0,'both');
@@ -110,7 +116,8 @@ for i = 1:numel(newlayer)
         impf(:,:,3) = impf(:,:,3) + mask * csc/(ocsc*numel(newlayer));
     end
     
-    if true%newlayer(i).nearest == "neg"
+    %if true
+    if newlayer(i).nearest == "neg"
         mask = zeros(768,1024);
         mask(newlayer(i).idx) = 1;
         mask = padarray(mask,[(imsize-1)/2 (imsize-1)/2],0,'both');
@@ -144,7 +151,8 @@ end
 
 for i = 1:numel(newhole)
     imsize = 401;
-    if true%newhole(i).nearest == "pos"
+    %if true
+    if newhole(i).nearest == "pos"
         mask = zeros(768,1024);
         mask(newhole(i).idx) = 1;
         mask = padarray(mask,[(imsize-1)/2 (imsize-1)/2],0,'both');
@@ -159,7 +167,8 @@ for i = 1:numel(newhole)
         impf(:,:,1) = impf(:,:,1) + mask * csc/(ocsc*numel(newhole));
     end
     
-    if true%newhole(i).nearest == "neg"
+    %if true
+    if newhole(i).nearest == "neg"
         mask = zeros(768,1024);
         mask(newhole(i).idx) = 1;
         mask = padarray(mask,[(imsize-1)/2 (imsize-1)/2],0,'both');
@@ -198,7 +207,8 @@ imnc = zeros(401,401,3);
 % Things to do with creating new layers.
 for i = 1:numel(loselayer)
     imsize = 401;
-    if true%loselayer(i).nearest == "pos"
+    %if true
+    if loselayer(i).nearest == "pos"
         mask = zeros(768,1024);
         mask(loselayer(i).idx) = 1;
         mask = padarray(mask,[(imsize-1)/2 (imsize-1)/2],0,'both');
@@ -213,7 +223,8 @@ for i = 1:numel(loselayer)
         impc(:,:,3) = impc(:,:,3) + mask * csc/(ocsc*numel(loselayer));
     end
     
-    if true%loselayer(i).nearest == "neg"
+    %if true
+    if loselayer(i).nearest == "neg"
         mask = zeros(768,1024);
         mask(loselayer(i).idx) = 1;
         mask = padarray(mask,[(imsize-1)/2 (imsize-1)/2],0,'both');
@@ -248,7 +259,8 @@ end
 
 for i = 1:numel(losehole)
     imsize = 401;
-    if true%losehole(i).nearest == "pos"
+    %if true
+    if losehole(i).nearest == "pos"
         mask = zeros(768,1024);
         mask(losehole(i).idx) = 1;
         mask = padarray(mask,[(imsize-1)/2 (imsize-1)/2],0,'both');
@@ -263,7 +275,8 @@ for i = 1:numel(losehole)
         impc(:,:,2) = impc(:,:,2) + mask * csc/(ocsc*numel(losehole));
     end
     
-    if true%losehole(i).nearest == "neg"
+    %if true
+    if losehole(i).nearest == "neg"
         mask = zeros(768,1024);
         mask(losehole(i).idx) = 1;
         mask = padarray(mask,[(imsize-1)/2 (imsize-1)/2],0,'both');
@@ -325,36 +338,36 @@ plot([200 200+10*cos(4*pi/3)],[200 200+10*sin(4*pi/3)],'w','LineWidth',1);
 plot([352 380],[380 380],'w','LineWidth',2)
 text(355,370,'5\mum','Color','w');
 
-f = figure('Units','pixels','Position',[0 0 401 401],'PaperUnits','points',...
-    'PaperSize',[401 401],'PaperPosition',[0 0 401 401]);
-ax = axes(f,'Units','pixels','Position',[0 0 401 401]);
-imshow(impc,'Parent',ax)
-hold on
-plot(200,200,'k.','MarkerSize',20)
-plot([200 211],[200 200],'k','LineWidth',3)
-plot(200,200,'w.','MarkerSize',15)
-plot([200 210],[200 200],'w','LineWidth',1)
-plot([352 380],[380 380],'k','LineWidth',2)
-text(355,370,'5\mum','Color','w');
+% f = figure('Units','pixels','Position',[0 0 401 401],'PaperUnits','points',...
+%     'PaperSize',[401 401],'PaperPosition',[0 0 401 401]);
+% ax = axes(f,'Units','pixels','Position',[0 0 401 401]);
+% imshow(impc,'Parent',ax)
+% hold on
+% plot(200,200,'k.','MarkerSize',20)
+% plot([200 211],[200 200],'k','LineWidth',3)
+% plot(200,200,'w.','MarkerSize',15)
+% plot([200 210],[200 200],'w','LineWidth',1)
+% plot([352 380],[380 380],'k','LineWidth',2)
+% text(355,370,'5\mum','Color','w');
+% 
+% f = figure('Units','pixels','Position',[0 0 401 401],'PaperUnits','points',...
+%     'PaperSize',[401 401],'PaperPosition',[0 0 401 401]);
+% ax = axes(f,'Units','pixels','Position',[0 0 401 401]);
+% imshow(imnc,'Parent',ax)
+% hold on
+% plot(200,200,'k.','MarkerSize',20)
+% plot([200 211],[200 200],'k','LineWidth',3)
+% plot([200 200+11*cos(2*pi/3)],[200 200+11*sin(2*pi/3)],'k','LineWidth',3);
+% plot([200 200+11*cos(4*pi/3)],[200 200+11*sin(4*pi/3)],'k','LineWidth',3);
+% plot(200,200,'w.','MarkerSize',15)
+% plot([200 210],[200 200],'w','LineWidth',1)
+% plot([200 200+10*cos(2*pi/3)],[200 200+10*sin(2*pi/3)],'w','LineWidth',1);
+% plot([200 200+10*cos(4*pi/3)],[200 200+10*sin(4*pi/3)],'w','LineWidth',1);
+% 
+% plot([352 380],[380 380],'w','LineWidth',2)
+% text(355,370,'5\mum','Color','w');
 
-f = figure('Units','pixels','Position',[0 0 401 401],'PaperUnits','points',...
-    'PaperSize',[401 401],'PaperPosition',[0 0 401 401]);
-ax = axes(f,'Units','pixels','Position',[0 0 401 401]);
-imshow(imnc,'Parent',ax)
-hold on
-plot(200,200,'k.','MarkerSize',20)
-plot([200 211],[200 200],'k','LineWidth',3)
-plot([200 200+11*cos(2*pi/3)],[200 200+11*sin(2*pi/3)],'k','LineWidth',3);
-plot([200 200+11*cos(4*pi/3)],[200 200+11*sin(4*pi/3)],'k','LineWidth',3);
-plot(200,200,'w.','MarkerSize',15)
-plot([200 210],[200 200],'w','LineWidth',1)
-plot([200 200+10*cos(2*pi/3)],[200 200+10*sin(2*pi/3)],'w','LineWidth',1);
-plot([200 200+10*cos(4*pi/3)],[200 200+10*sin(4*pi/3)],'w','LineWidth',1);
-
-plot([352 380],[380 380],'w','LineWidth',2)
-text(355,370,'5\mum','Color','w');
-
-%%
+%% Make colorbars
 x = 1:5;
 y = 0:300;
 [xx,yy] = meshgrid(x,y);
@@ -379,3 +392,115 @@ pcbar(:,:,3) = csc/ocsc*(yy/max(y));
 show(pcbar)
 set(gca,'YDir','normal')
 set(gca,'YLim', [0 max(y)/ceil(csc/ocsc)+2]);
+
+%% Null model, control
+
+fpaths = [];
+times = [];
+folders = getfold(datapath);
+for f = 1:numel(folders)
+    fpath = folders{f};
+    files = dir([fpath '/Laser']);
+    dF = [files.isdir];
+    files(dF) = [];
+    for t = 1:numel(files)
+        fpaths = [fpaths; string(fpath)];
+        times = [times; t];
+    end
+end
+
+tests = randi(numel(fpaths),[2000 1]);
+clp = 0;
+cln = 0;
+dps = [];
+dns = [];
+for i = 1:numel(tests)
+    defs = finddefects(char(fpaths(tests(i))),times(tests(i)));
+    testx = randi(1024);
+    testy = randi(768);
+    pxs = [defs([defs.q]>0).x];
+    pys = [defs([defs.q]>0).y];
+    dp = min(sqrt((pxs-testx).^2+(pys-testy).^2));
+    dps = [dps; dp];
+    nxs = [defs([defs.q]<0).x];
+    nys = [defs([defs.q]<0).y];
+    dn = min(sqrt((nxs-testx).^2+(nys-testy).^2)); 
+    dns = [dns; dn];
+    
+    dw = min([testx,testy,(1024-testx),(768-testy)]);
+    if ~isempty(dp) && ~isempty(dn)
+        if dp>dn && dp>dw
+            clp = clp+1;
+        end
+        if dn>dw && dn>dp
+            cln = cln+1;
+        end
+    end
+end
+
+%% Count things
+
+figure
+numel(newhole)
+numel(newlayer)
+hclp = 0;
+hcln = 0;
+for i = 1:numel(newhole)
+    if newhole(i).nearest =="pos"
+        hclp = hclp+1;
+    elseif newhole(i).nearest == "neg"
+        hcln = hcln+1;
+    end
+end
+
+lclp = 0;
+lcln = 0;
+for i = 1:numel(newlayer)
+    if newlayer(i).nearest =="pos"
+        lclp = lclp+1;
+    elseif newlayer(i).nearest == "neg"
+        lcln = lcln+1;
+    end
+end
+
+bar(1,hcln/(hcln+hclp),'b','BarWidth',1)
+hold on
+bar(2,hclp/(hcln+hclp),'r','BarWidth',1)
+bar(3.5,lcln/(lcln+lclp),'b','BarWidth',1)
+bar(4.5,lclp/(lcln+lclp),'r','BarWidth',1)
+bar(7,clp/(cln+clp),'r','BarWidth',1)
+bar(6,cln/(cln+clp),'b','BarWidth',1)
+
+set(gca,'FontSize',12)
+xticks([1.5, 4, 6.5])
+ylabel("Counts")
+xticklabels(["Holes", "Layers", "Control"])
+
+%% Distribution of distances
+eds = 0:20:400;
+dn = sqrt(([newlayer.x]-[newlayer.nnx]).^2+([newlayer.y]-[newlayer.nny]).^2);
+dp = sqrt(([newlayer.x]-[newlayer.npx]).^2+([newlayer.y]-[newlayer.npy]).^2);
+ldn = histcounts(dn,eds,'Normalization','pdf');
+ldp = histcounts(dp,eds,'Normalization','pdf');
+
+dn = sqrt(([newhole.x]-[newhole.nnx]).^2+([newhole.y]-[newhole.nny]).^2);
+dp = sqrt(([newhole.x]-[newhole.npx]).^2+([newhole.y]-[newhole.npy]).^2);
+hdn = histcounts(dn,eds,'Normalization','pdf');
+hdp = histcounts(dp,eds,'Normalization','pdf');
+
+cdn = histcounts(dns,eds,'Normalization','pdf');
+cdp = histcounts(dps,eds,'Normalization','pdf');
+
+plot(0.133*(eds(2:end)-eds(2)/2),hdn./cdn,'b--','LineWidth',2)
+hold on
+plot(0.133*(eds(2:end)-eds(2)/2),hdp./cdp,'r--','LineWidth',2)
+
+plot(0.133*(eds(2:end)-eds(2)/2),ldn./cdn,'b','LineWidth',2)
+plot(0.133*(eds(2:end)-eds(2)/2),ldp./cdp,'r','LineWidth',2)
+
+plot(0.133*[0 400],[1 1],'k-.','LineWidth',2)
+xlim([0 20])
+set(gca,'FontSize',12)
+xlabel("Distance (\mum)")
+ylabel("Normalized PDF")
+ylim([0 50])

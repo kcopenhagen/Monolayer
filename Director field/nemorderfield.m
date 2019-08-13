@@ -1,7 +1,8 @@
 function nemorderfield(fpath,t)
 % Calculates local order field of image in fpath, at time t.
 %    Saves into analysis/order folder as an array of floats.
-
+%% Calc order
+    %r = 0.5;
     r = 0.5;
     XYcal = getXYcal(fpath);
     name = sprintf('%06d.bin',t-1);
@@ -32,6 +33,7 @@ function nemorderfield(fpath,t)
 
     S = S(ceil(rr)+1:end-ceil(rr),ceil(rr)+1:end-ceil(rr));
     
+    %% Save file
     fID = fopen([fpath 'analysis/order/' name],'w');
     fwrite(fID,S,'float');
     fclose(fID);

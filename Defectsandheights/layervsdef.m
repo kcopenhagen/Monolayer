@@ -57,14 +57,22 @@ for f = 1:numel(folders)
             
             dists = sqrt((laych(i).x-defxs).^2+(laych(i).y-defys).^2);
             nn = min(dists(cqs<0));
-            cln = dists==nn;
+            if ~isempty(nn)
+                cln = dists==nn;
+            else
+                cln = [];
+            end
             
             laych(i).nnx = defxs(cln);
             laych(i).nny = defys(cln);
             laych(i).nnd = cds(cln,:);
             
             np = min(dists(cqs>0));
-            clp = dists==np;
+            if ~isempty(np)
+                clp = dists==np;
+            else
+                clp = [];
+            end
             laych(i).npx = defxs(clp);
             laych(i).npy = defys(clp);
             laych(i).npd = cds(clp,:);

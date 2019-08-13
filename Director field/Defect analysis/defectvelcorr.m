@@ -1,6 +1,6 @@
 function defectvelcorr(datapath)
 %%
-addpath('../');
+addpath('../Director field');
 
 folders = dir(datapath);
 dF = [folders.isdir];

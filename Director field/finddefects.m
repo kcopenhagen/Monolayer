@@ -7,7 +7,7 @@ function adefs = finddefects(fpath, t)
     r = 6;
     re = makeringelement(r);
     S = loaddata(fpath,t,'order','float');
-    dir = loaddata(fpath,t,'dfield','float');
+    dfield = loaddata(fpath,t,'dfield','float');
     lays = loaddata(fpath,t,'manuallayers','int8');
     CC = bwconncomp(lays<=0);
     P = regionprops(CC,'PixelIdxList','MinorAxisLength');
@@ -22,7 +22,8 @@ function adefs = finddefects(fpath, t)
     %Anywhere with order below 0.5 is a defect point, find those regions
     %and label their centroids as defect locations.
     
-    defs = (S<0.5);
+    %defs = (S<0.5);
+    defs = imextendedmin(S,0.3).*imextendedmin(S,0.2);
     
     CC = bwconncomp(defs);
     P = regionprops(CC, 'Centroid');
@@ -34,6 +35,7 @@ function adefs = finddefects(fpath, t)
     nog = ~(Centx<r).*~(Centx>numel(S(1,:))-r).*~(Centy<r).*~(Centy>numel(S(:,1))-r);
     Centx(~nog) = [];
     Centy(~nog) = [];
+    
     
     %Exclude defects in holes.
     inds = sub2ind(size(S),Centy,Centx);
@@ -48,7 +50,7 @@ function adefs = finddefects(fpath, t)
     %Loop through all defects to find charge and direction for them.
     for i = 1:numel(Centx)
         %Get the director field just around the defect centroid.
-        dirt = dir(Centy(i)-r+1:Centy(i)+r-1,Centx(i)-r+1:Centx(i)+r-1);
+        dirt = dfield(Centy(i)-r+1:Centy(i)+r-1,Centx(i)-r+1:Centx(i)+r-1);
         %Find the director at each ring element pixel.
         ang1s = dirt(re);
         ang2s = [ang1s(2:end); ang1s(1)];
@@ -106,6 +108,7 @@ function adefs = finddefects(fpath, t)
     y = Centy;
     adefs = struct('x',num2cell(x'),'y',num2cell(y'),'q',num2cell(q'),'d',num2cell(d,2));
     adefs([adefs.q]==0) = [];
+    
 end
     
 

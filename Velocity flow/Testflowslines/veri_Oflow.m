@@ -24,14 +24,19 @@ for f = 1:numel(files)
     dt2 = 1/60*(times(t+1)-times(t));
     
     if t-(nf+1)/2>0 && t+(nf+1)/2<numel(times)
-        flow = calctestflow(fpath,t,nf,gf,imf);
+        %flow = calctestflow(fpath,t,nf,gf,imf);
+        Vx = loaddata(fpath,t,'flows/Vx','float');
+        Vy = loaddata(fpath,t,'flows/Vy','float');
         xs = p1s(:,1);
         ys = p1s(:,2);
 
-        inds = sub2ind(size(flow.Vx),round(ys),round(xs));
-        cvx = flow.Vx(inds);
-        cvy = flow.Vy(inds);
-
+%        inds = sub2ind(size(flow.Vx),round(ys),round(xs));
+        inds = sub2ind(size(Vx),round(ys),round(xs));
+        %cvx = flow.Vx(inds);
+        %cvy = flow.Vy(inds);
+        cvx = Vx(inds);
+        cvy = Vy(inds);
+        
         lvx = p2s(:,1)-p0s(:,1);
         lvy = p2s(:,2)-p0s(:,2);
 

@@ -1,13 +1,19 @@
 function [xs,ys,vx,vy] = PIV(fpath,t,dx)
 
     cent = round((dx+1)/2);
+    try
+        l2 = laserdata(fpath,t+1);
+    catch
+        t = t-1;
+    end
+    
     l1 = laserdata(fpath,t);
-    l2 = laserdata(fpath,t+1);
     l1 = imsharpen(l1,'Amount',3,'Radius',3);
     l1 = normalise(l1);
     l1s = imgaussfilt(l1,64);
     l1 = l1./l1s;
-
+    
+    l2 = laserdata(fpath,t+1);
     l2 = imsharpen(l2,'Amount',3,'Radius',3);
     l2 = normalise(l2);
     l2s = imgaussfilt(l2,64);
