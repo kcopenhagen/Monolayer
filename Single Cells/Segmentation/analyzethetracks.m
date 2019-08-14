@@ -125,13 +125,13 @@ playmovie(F2)
 
 %% Put the video into a file.
 
-v = VideoWriter('revvid.avi');
-v.FrameRate = 15;
-v.Quality = 75;
+v = VideoWriter('allvid.avi');
+v.FrameRate = 30;
+v.Quality = 15;
 open(v);
 
-for t = 1:numel(F2)
-    writeVideo(v,F2(t).cdata);
+for t = 1:numel(F)/2
+    writeVideo(v,F(t));
 end
 close(v);
 
@@ -260,8 +260,8 @@ for t = 1:max([fcells.t])
 
     imshow(mask)
 
-    xlims = xlims+dr(t,1);
-    ylims = ylims+dr(t,2);
+    xlims = xlims+round(dr(t,1));
+    ylims = ylims+round(dr(t,2));
     xlim(xlims);
     ylim(ylims);
     F(t) = getframe;
