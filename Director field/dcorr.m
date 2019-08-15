@@ -32,8 +32,9 @@ function dcorr(datapath)
     XYcal = getXYcal(fpath);
     plot((unique(subs)-1),adc,'k','LineWidth',2);
     hold on
-    plot([8 8],[0 0.5],'k--')
-    plot([0 8],[0.5 0.5],'k--')
+    l = find(abs(adc-0.5)==min(abs(adc-0.5)))-1
+    plot([l l],[0 0.5],'k--')
+    plot([0 l],[0.5 0.5],'k--')
     set(gca,'FontSize',12);
     xlim([0 100])
     xlabel('Distance (R {\mu}m)');
