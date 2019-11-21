@@ -1,4 +1,6 @@
 function laychs = layervsdef(datapath)
+%%
+addpath('/Users/kcopenhagen/Documents/MATLAB/gitstuff/Monolayer/Height analysis/Layer formation/IDing Layers');
 folders = dir(datapath);
 dirFlags = [folders.isdir];
 folders = folders(dirFlags);
@@ -16,22 +18,9 @@ wallidx = find(walls == 1);
 for f = 1:numel(folders)
     
     fpath = [folders(f).folder '/' folders(f).name '/'];
-    files = dir([fpath 'Laser/']);
-    dirFlags = [files.isdir];
-    files = files(~dirFlags);
+    load([fpath 'adefs.mat'],'adefs');
     
-    adefs = alldefects(fpath);
-    x = [adefs.x];
-    y = [adefs.y];
-    q = [adefs.q]; 
-    dt = [adefs.d];
-    d = [dt(1:2:end-1)' dt(2:2:end)'];
-    tt = [adefs.tt];
-    ts = [adefs.ts];
-    id = [adefs.id];
-    
-    N = numel(files);
-    for t = 2:N-1
+    for t = 2:max([adefs.ts])
         laych = LayerChanges(fpath,t);
         del = [];
         holes = loaddata(fpath,t-1,'manuallayers','int8')==0;
@@ -42,47 +31,48 @@ for f = 1:numel(folders)
         for i = 1:numel(Ps)
             holes(Ps(i).PixelIdxList) = 0;
         end
+        
         for i = 1:numel(laych)
-            cdefs = ts == t-1;
-
-            definds = sub2ind(size(holes),round(y),round(x));
+            cdefs = adefs([adefs.ts] == t-1);
             
-            cdefs(holes(definds)) = false;
+            dists = sqrt((laych(i).x-[cdefs.x]).^2+(laych(i).y-[cdefs.y]).^2);
             
-            defxs = x(cdefs);
-            defys = y(cdefs);
+            ndists = dists([cdefs.q]<0);
+            nn = min(ndists);
             
-            cds = d(cdefs,:);
-            cqs = q(cdefs);
-            
-            dists = sqrt((laych(i).x-defxs).^2+(laych(i).y-defys).^2);
-            nn = min(dists(cqs<0));
             if ~isempty(nn)
                 cln = dists==nn;
             else
                 cln = [];
             end
             
-            laych(i).nnx = defxs(cln);
-            laych(i).nny = defys(cln);
-            laych(i).nnd = cds(cln,:);
+            laych(i).nnx = [cdefs(cln).x];
+            laych(i).nny = [cdefs(cln).y];
+            laych(i).nnd = [cdefs(cln).d];
             
-            np = min(dists(cqs>0));
+            pdists = dists([cdefs.q]>0);
+            
+            np = min(pdists);
             if ~isempty(np)
                 clp = dists==np;
             else
                 clp = [];
             end
-            laych(i).npx = defxs(clp);
-            laych(i).npy = defys(clp);
-            laych(i).npd = cds(clp,:);
+            
+            laych(i).npx = [cdefs(clp).x];
+            laych(i).npy = [cdefs(clp).y];
+            laych(i).npd = [cdefs(clp).d];
             
             laych(i).dwall = min([laych(i).x, 1024 - laych(i).x,laych(i).y,768-laych(i).y]);
+            laych(i).pd = pdists;
+            laych(i).nd = ndists;
+            
             if ~isempty(intersect(laych(i).idx,wallidx))
                 del = [del; i];
             end
+            
         end
-        
+
         laych(del) = [];
         
         laychs = [laychs laych];
