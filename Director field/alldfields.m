@@ -1,4 +1,9 @@
 function alldfields(datapath)
+
+    % Goes through all experiments in the datapath folder and calculates
+    % the director field and saves it for all of them using the dfield
+    % function.
+    
     n = 13;
     
     fpath = [uigetdir(datapath) '/'];
