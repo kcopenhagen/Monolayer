@@ -1,13 +1,12 @@
 function dfieldcbar
 
-%% Make a colorbar for directors
-
+%% Make a circular colorbar for directors
 x = -100:100;
 y = 0:100;
 [xx,yy] = meshgrid(x,y);
 
 angles = atan(yy./xx);
-im = real2rgb(angles,colorcet('C2'));
+im = real2rgb(angles,orientcmap);
 
 rr = sqrt(xx.^2+yy.^2);
 circ = zeros(size(rr));

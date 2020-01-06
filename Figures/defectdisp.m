@@ -1,5 +1,5 @@
 function defectdisp(datapath)
-%% Calculate average directions
+%% Calculate average director field around defects.
 
 addpath('../Director field');
 fpaths = getfold(datapath);
@@ -111,8 +111,7 @@ navgdx = nmag.*cos(cdir/2);
 navgdy = nmag.*sin(cdir/2);
 
 %% Plot positive ones
-
-
+load('orientcmap','mymap');
 fig = figure('Units','pixels','Position',[200 200 403 403]);
 
 ax = axes(fig,'Units','pixels','Position',[2 2 401 401],'FontSize', 38,...
@@ -120,7 +119,7 @@ ax = axes(fig,'Units','pixels','Position',[2 2 401 401],'FontSize', 38,...
     'TickLength',[0.03 0.03],'LineWidth',2,'ColorMap',colorcet('C2'),'YDir','reverse');
 hold(ax,'on')
 surf(ax,atan2(pavgdy,pavgdx),'EdgeColor','none');
-colorcet('C2')
+colormap(mymap);
 xticks(201-20/0.133:10/0.133:201+20/0.133)
 yticks(201-20/0.133:10/0.133:201+20/0.133)
 % yticklabels(["20   " "10   " "0   " "-10   " "-20   "]);
@@ -136,7 +135,24 @@ b = 3;
 X = a*cos(t);
 Y = b*sin(t);
 
-%%
+%% Add streamlines to positive ones.
+
+pts = [100 211; 61 216; 140 203; 170 201; 192 200; 210 200; 204 193; 207 209;...
+    192 201; 170 202; 140 204; 100 212; 61 217];
+ls = 250*ones(numel(pts)/2,1);
+for i = 1:numel(ls)
+    sld = sl(pavgdx,pavgdy,pts(i,:),ls(i));
+    plot3(sld(:,1),sld(:,2),5*ones(size(sld(:,1))),'k','LineWidth',2);
+end
+
+pts1 = [192 201; 170 201; 140 203; 100 211; 61 217];
+pts2 = [192 200; 170 202; 140 204; 100 212; 61 216];
+for i = 1:numel(pts1)/2
+    plot3([pts1(i,1) pts2(i,1)],[pts1(i,2) pts2(i,2)],5*ones(2,1),'k','LineWidth',2);
+end
+
+%% Add elipses to positive ones.
+
 while true
     [xx, yy] = ginput(1);
     xx = round(xx);
@@ -148,9 +164,9 @@ while true
     plot3(x,y,3*ones(size(x)),'k','LineWidth',1.5)
 end
 
+
 %% Plot negative ones
-
-
+load('orientcmap','mymap');
 
 fig = figure('Units','pixels','Position',[200 200 403 403]);
 
@@ -159,7 +175,7 @@ ax = axes(fig,'Units','pixels','Position',[2 2 401 401],'FontSize', 38,...
     'TickLength',[0.03 0.03],'LineWidth',2,'ColorMap',colorcet('C2'),'XDir','reverse');
 hold(ax,'on')
 surf(ax,atan2(navgdy,navgdx),'EdgeColor','none');
-colorcet('C2')
+colormap(mymap);
 xticks(201-20/0.133:10/0.133:201+20/0.133)
 yticks(201-20/0.133:10/0.133:201+20/0.133)
 yticklabels(["20   " "10   " "0   " "-10   " "-20   "]);
@@ -175,14 +191,39 @@ b = 3;
 X = a*cos(t);
 Y = b*sin(t);
 
+%% Add streamlines to negative ones
 
-%%
+
+pts = [175 400; 210 400; 140 400; 120 400; 106 400; ...
+    270 50; 210 50; 160 50; 125 50];
+ls = 400*ones(numel(pts)/2,1);
+for i = 1:numel(ls)
+    sld = sl(navgdx,navgdy,pts(i,:),ls(i));
+    plot3(sld(:,1),sld(:,2),5*ones(size(sld(:,1))),'k','LineWidth',2);
+end
+
+pts = [175 202; 175 201; 142 202; 142 203; 106 208; 106 209; 72 213; 72 212];
+ls = 400*ones(numel(pts)/2,1);
+
+for i = 1:numel(ls)
+    sld = sl(-navgdx,-navgdy,pts(i,:),ls(i));
+    plot3(sld(:,1),sld(:,2),5*ones(size(sld(:,1))),'k','LineWidth',2);
+end
+
+pts1 = [175 202; 142 202; 106 208; 72 213];
+pts2 = [175 201; 142 203; 106 209; 72 212];
+for i = 1:numel(pts1)/2
+    plot3([pts1(i,1) pts2(i,1)],[pts1(i,2) pts2(i,2)],5*ones(2,1),'k','LineWidth',2);
+end
+
+
+%% Add elipses to negative defs.
 
 while true
     [xx, yy] = ginput(1);
     xx = round(xx);
     yy = round(yy);
-    
+
     w = atan2(navgdy(yy,xx),navgdx(yy,xx));
     x = xx + X*cos(w) - Y*sin(w);
     y = yy + X*sin(w) + Y*cos(w);

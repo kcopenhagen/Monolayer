@@ -25,19 +25,19 @@ t = 10;
     set(gca,'ColorMap',cmap);
     x = 870;
     y = 700;
-    plot([x+30 x+107],[y+24 y+24], 'k', 'Linewidth',8)
-    plot([x+32 x+105],[y+24 y+24], 'w', 'Linewidth',4)
+    plot([x+30-75 x+107],[y+24 y+24], 'k', 'Linewidth',8)
+    plot([x+32-75 x+105],[y+24 y+24], 'w', 'Linewidth',4)
     
-    text(x+5,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+5,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+6,y-15,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+4,y-15,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+4,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+6,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+6,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+4,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+5,y-15,'10\mum','Color','w','FontSize',26,'FontName','Latin Modern Math')
-    
+%     text(x+5,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+5,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+6,y-15,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+4,y-15,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+4,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+6,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+6,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+4,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+5,y-15,'10\mum','Color','w','FontSize',26,'FontName','Latin Modern Math')
+%     
     zix = [265 63];
     ziy = [345 193];
     plot([zix(1) zix(2) zix(2) zix(1) zix(1)],[ziy(1) ziy(1) ziy(2) ziy(2) ziy(1)],...
@@ -50,15 +50,15 @@ t = 10;
     ylim([ziy(2) ziy(1)])
     x = zix(1)-25;
     y = ziy(1)-10;
-    plot([x+2 x+17],[y+4 y+4], 'k', 'Linewidth',8)
-    plot([x+2.5 x+16.5],[y+4 y+4], 'w', 'Linewidth',4)
-    
-    text(x,y-3.8,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x,y-4.2,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+0.2,y-4,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x-0.2,y-4,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x-0.2,y-3.8,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+0.2,y-4.2,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+0.2,y-3.8,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x-0.2,y-4.2,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x,y-4,'2\mum','Color','w','FontSize',26,'FontName','Latin Modern Math')
+    plot([x+2-15 x+17],[y y], 'k', 'Linewidth',8)
+    plot([x+2.5-15 x+16.5],[y y], 'w', 'Linewidth',4)
+%     
+%     text(x,y-3.8,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x,y-4.2,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+0.2,y-4,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x-0.2,y-4,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x-0.2,y-3.8,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+0.2,y-4.2,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+0.2,y-3.8,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x-0.2,y-4.2,'2\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%    text(x,y-4,'2\mum','Color','w','FontSize',26,'FontName','Latin Modern Math')

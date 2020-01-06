@@ -1,5 +1,10 @@
 function laychsplots(datapath)
-addpath('/Users/kcopenhagen/Documents/MATLAB/gitstuff/Monolayer/Height analysis/Layer formation/IDing Layers');
+%% Plots that have to do with layers / holes forming in relation to defect locations.
+%  Images with layers overlayed with eachother in relation to defect core.
+%  Distribution of probabilities for distances between layers / holes forming
+%    and defects of + and - charges.
+
+addpath('/Users/kcopenhagen/Documents/MATLAB/gitstuff/Monolayer/Defectsandheights/');
 laychs = layervsdef(datapath);
 
 %% Identify nearest thing to each layer change event.
@@ -409,7 +414,7 @@ for f = 1:numel(folders)
     end
 end
 
-tests = randi(numel(fpaths),[20000 1]);
+tests = randi(numel(fpaths),[40000 1]);
 clp = 0;
 cln = 0;
 dps = [];
@@ -510,9 +515,9 @@ xlabel("Distance (\mum)")
 ylabel("Normalized PDF")
 ylim([0 50])
 
-%%
-
-eds = 0:20:400;
+%% Plot the distribution on separate plots for +/- defects.
+pws = 1:20;
+eds = 2.^pws;
 pcol = [238 34 12]/255;
 ncol = [0 0 255]/255;
 
@@ -521,9 +526,9 @@ layerndists = histcounts([newlayer.nd],eds,'Normalization','pdf');
 holepdists = histcounts([newhole.pd],eds,'Normalization','pdf');
 holendists = histcounts([newhole.nd],eds,'Normalization','pdf');
 
-
 cdp = histcounts(pdists,eds,'Normalization','pdf');
 cdn = histcounts(ndists,eds,'Normalization','pdf');
+
 
 fig = figure('Units','pixels','Position',[440 378 560 420]);
 ax = axes(fig,'Units','pixels','Position',[35 225 305 180]);
@@ -549,4 +554,74 @@ xlim([0 20])
 ylim([0 50])
 set(gca,'FontSize',12)
 
+%% Plot the distribution on separate plots for +/- defects, with errorbars.
 
+pws = 2:10;
+eds = [0 2.^pws];
+
+bcents1 = eds(2:end);
+bcents2 = eds(1:end-1);
+bcents = (bcents1+bcents2)/2;
+
+pcol = [230 31 15]/255;
+ncol = [0 115 178]/255;
+
+lpds = histcounts([newlayer.pd],eds,'Normalization','pdf');
+lnds = histcounts([newlayer.nd],eds,'Normalization','pdf');
+hpds = histcounts([newhole.pd],eds,'Normalization','pdf');
+hnds = histcounts([newhole.nd],eds,'Normalization','pdf');
+
+lpderrs = lpds.*(1-lpds)/numel(newlayer);
+lnderrs = lnds.*(1-lnds)/numel(newlayer);
+hpderrs = hpds.*(1-hpds)/numel(newhole);
+hnderrs = hnds.*(1-hnds)/numel(newhole);
+
+cdp = histcounts(pdists,eds,'Normalization','pdf');
+cdn = histcounts(ndists,eds,'Normalization','pdf');
+
+cdperr = cdp.*(1-cdp)/numel(pdists);
+cdnerr = cdn.*(1-cdn)/numel(ndists);
+
+lpraterrs = (lpds./cdp).^2.*((lpderrs./lpds).^2+(cdperr./cdp).^2);
+lnraterrs = (lnds./cdn).^2.*((lnderrs./lnds).^2+(cdnerr./cdn).^2);
+hpraterrs = (hpds./cdp).^2.*((hpderrs./hpds).^2+(cdperr./cdp).^2);
+hnraterrs = (hnds./cdn).^2.*((hnderrs./hnds).^2+(cdnerr./cdn).^2);
+
+
+fig = figure('Units','pixels','Position',[440 378 560 540]);
+ax = axes(fig,'Units','pixels','Position',[135 345 305 180],...
+    'FontSize', 24,...
+    'Visible','on','FontName', 'Latin Modern Math','layer','top','box','on',...
+    'TickLength',[0.03 0.03],'LineWidth',2,'YScale','log');
+
+hold(ax,'on');
+hold on
+errorbar(ax,0.133*bcents,lpds./cdp,lpraterrs,'Color',pcol,'LineWidth',3)
+errorbar(ax,0.133*bcents,lnds./cdn,lnraterrs,'Color',ncol,'LineWidth',3)
+
+plot(0.133*[0 400],[1 1],'k-.','LineWidth',2)
+xticks([0 5 10 15 20])
+xlim([0 20])
+ylim([0.5 150])
+xticklabels([]);
+yticklabels([]);
+Yrule = get(ax,'YRuler');
+Yrule.MinorTickValues = [0.1:0.1:0.9 1:9 10:10:100];
+
+ax2 = axes(fig,'Units','pixels','Position',[135 135 305 180],...
+    'FontSize', 24,...
+    'Visible','on','FontName', 'Latin Modern Math','layer','top','box','on',...
+    'TickLength',[0.03 0.03],'LineWidth',2,'YScale','log');
+hold(ax2,'on');
+
+errorbar(ax2,0.133*bcents,hnds./cdn,hnraterrs,'Color',ncol,'LineWidth',3)
+hold on
+errorbar(ax2,0.133*bcents,hpds./cdp,hpraterrs,'Color',pcol,'LineWidth',3)
+
+plot(ax2,0.133*[0 400],[1 1],'k-.','LineWidth',2)
+xlim([0 20])
+ylim([0.5 150])
+xticklabels([])
+yticklabels([])
+Yrule = get(ax2,'YRuler');
+Yrule.MinorTickValues = [0.1:0.1:0.9 1:9 10:10:100];

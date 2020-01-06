@@ -1,4 +1,4 @@
-function avglayarounddef(datapath)
+function averagelaserim(datapath)
 addpath('../Director field');
 imsize = 401;
 folders = dir(datapath);

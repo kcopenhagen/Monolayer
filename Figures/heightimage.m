@@ -30,16 +30,16 @@ t = 10;
     hold on
     x = 870;
     y = 700;
-    plot([x+30 x+107],[y+24 y+24], 'k', 'Linewidth',8)
-    plot([x+32 x+105],[y+24 y+24], 'w', 'Linewidth',4)
+    plot([x+30-75 x+107],[y+24 y+24], 'k', 'Linewidth',8)
+    plot([x+32-75 x+105],[y+24 y+24], 'w', 'Linewidth',4)
     
-    text(x+5,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+5,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+6,y-15,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+4,y-15,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+4,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+6,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+6,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+4,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
-    text(x+5,y-15,'10\mum','Color','w','FontSize',26,'FontName','Latin Modern Math')
-    
+%     text(x+5,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+5,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+6,y-15,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+4,y-15,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+4,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+6,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+6,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+4,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
+%     text(x+5,y-15,'10\mum','Color','w','FontSize',26,'FontName','Latin Modern Math')
+%     
