@@ -1,5 +1,11 @@
 function findlayers(fpath, t, hl, sf, cl)
 
+    %% Calculate the layers at each height, given the parameters found
+    % from the 'allthethings' script. 
+    % hl - height step size between layers.
+    % sf - size of the filter for calculating layer edges.
+    % cl - size of the element used for imclose on the layer edges.
+    
     if nargin<3
         hl = 0.1616;
     end
@@ -64,7 +70,6 @@ function findlayers(fpath, t, hl, sf, cl)
     end
     alllays = unique(layer(~isnan(layer(:))));
     addlay = NaN(size(layer));
-
     for i = 1:numel(alllays)
         curlay = alllays(i);
         mask = zeros(size(layer));
