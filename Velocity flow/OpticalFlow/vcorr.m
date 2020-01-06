@@ -1,5 +1,6 @@
 function vcorr(datapath)
-%%
+%% Calculate and plot velocity correlation function vs. r. Fit to find correlation length.
+
     fpaths = getfold(datapath);
     vcorrs = [];
     vvs = [];
@@ -33,17 +34,29 @@ function vcorr(datapath)
     %% Bin and average the correlations then plot that.
     
     subs = round(2*drs)+1;
-    adc = accumarray(subs,(vcorrs),[],@mean);
+    
     av = mean(vvs);
+    adc = accumarray(subs,(vcorrs)/av,[],@mean);
+    adcerr = accumarray(subs,vcorrs/av,[],@std);
+    n = accumarray(subs,ones(size(vcorrs)),[],@sum);
+    ars = accumarray(subs,drs,[],@mean);
+
     XYcal = getXYcal(fpath);
-    plot(((unique(subs)-1)/2),adc/av,'k','LineWidth',2);
+    %plot(((unique(subs)-1)/2),adc/av,'k','LineWidth',2);
+    errorbar(ars,adc,adcerr./sqrt(n),'k.','LineWidth',2);
+    
     hold on
-    l = (find(abs(adc/av-0.5)==min(abs(adc/av-0.5)))-1)/2
-    plot([l l],[0 0.5],'k--')
-    plot([0 l],[0.5 0.5],'k--')
-    set(gca,'FontSize',12);
-    xlim([0 100])
-    ylim([-0.01 1])
-    xlabel('Distance (R {\mu}m)');
-    ylabel('{\langle}v(R) \cdot v(0){\rangle} / {\langle}v(0) \cdot v(0){\rangle}');
+%     l = (find(abs(adc/av-0.5)==min(abs(adc/av-0.5)))-1)/2
+%     plot([l l],[0 0.5],'k--')
+%     plot([0 l],[0.5 0.5],'k--')
+    plot(ars,exp(-(1/3.9)*ars),'r--','LineWidth',2)
+    set(gca,'FontSize',12,'LineWidth',2)
+    hold on
+    
+    xlim([0 90])
+    xticks([0 25 50 75])
+    xticklabels([])
+    ylim([0 1])
+    yticks([0 0.5 1])
+    yticklabels([])
 end
