@@ -14,6 +14,39 @@ set(gca,'FontSize',12)
 xlabel('Speed (\mum/min)')
 ylabel('Count')
 
+%% Live cell speed histogram
+ids = unique([acells.id]);
+speeds = [];
+
+for i = 1:numel(ids)
+    id = ids(i);
+    ccells = acells([acells.id]==id);
+    uzeit = false;
+    speedst = [];
+    for j = 1:numel(ccells)
+        speed = sqrt(ccells(j).v(1)^2+ccells(j).v(2)^2);
+        speedst = [speedst; speed];
+        if speed>1
+            uzeit = true;
+        end
+    end
+    if uzeit
+        
+        speeds = [speeds; speedst];
+    end
+end
+i = 1;
+
+
+eds = 0:0.1:10;
+pvs = histcounts(speeds,eds,'Normalization','pdf');
+
+plot(eds(2:end)-eds(1)/2,pvs,'k','LineWidth',2);
+hold on
+set(gca,'FontSize',18);
+xlabel('Speed (\mum /min)');
+ylabel('PDF');
+
 %% Autocorrelation of velocities to find the reversals
 
 ids = unique([acells.id]);
@@ -271,3 +304,23 @@ playmovie(F)
 
 
 "Movie generated"
+
+%% Peclet-1 number
+
+lcell = 2.5;
+v0 = mean(speeds);
+Dr = 0.127;
+T = mean(revTs/60);
+frev = 1/T;
+
+sigv02 = var(speeds)/sqrt(numel(speeds));
+Tvar = var(revTs/60)/sqrt(numel(revTs));
+sigfrev2 = frev^2*(Tvar/T^2);
+
+A = lcell/v0;
+sigA2 = A^2*(sigv02/v0^2);
+B = Dr + 2*frev;
+sigB2 = 2^2*sigfrev2;
+
+Pe = A*B
+sigPe = Pe^2*(sigA2/A^2 + sigB2/B^2)
