@@ -19,4 +19,5 @@ function h = heightdata(fpath, t)
     im = fread(fid,[1024 768],'int');
     h = Zcal * transpose(im);
     fclose(fid);
+    
 end

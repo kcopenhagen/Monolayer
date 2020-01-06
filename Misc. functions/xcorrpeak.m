@@ -1,8 +1,6 @@
 function p = xcorrpeak(h)
     [i,j] = find(h == max(h(:)),1);
-    
-    good = 1;
-    
+
     while j<2 || i<2 || j>(numel(h(1,:))-1) || i>(numel(h(:,1))-1)
         h(i,j) = -10;
         [i,j] = find(h == max(h(:)));
