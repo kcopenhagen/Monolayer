@@ -8,7 +8,7 @@ function nemorderfield(fpath,t)
     name = sprintf('%06d.bin',t-1);
     [~,~,~] = mkdir([fpath 'analysis/order']);
     try
-        dir = loaddata(fpath,t,'dfield','float');
+        dfield = loaddata(fpath,t,'dfield','float');
     catch
         msgbox(['Run dfield calculations for ' fpath ' at time t = ' t '...']);
         return
@@ -16,23 +16,32 @@ function nemorderfield(fpath,t)
     
     rr = round(r/XYcal);
     se = strel('disk',rr);
-    dir = padarray(dir,[ceil(rr),ceil(rr)],'replicate','both');
-    nhood = se.Neighborhood/sum(sum(se.Neighborhood));
-    vx = cos(2*dir);
-    vy = sin(2*dir);
+    mf = se.Neighborhood;
+    norm = conv2(ones(size(dfield)),mf,'same');
 
-    vxvx = vx.*vx;
-    vxvy = vx.*vy;
-    vyvy = vy.*vy;
-    a = 2*conv2(vxvx,nhood,'same')-1;
-    bc = 2*conv2(vxvy,nhood,'same');
-    d = 2*conv2(vyvy,nhood,'same')-1;
-    l1 = ((a+d)+sqrt((a+d).^2-4*(a.*d-bc.^2)))/2;
-    l2 = ((a+d)-sqrt((a+d).^2-4*(a.*d-bc.^2)))/2;
-    S = max(l1,l2);
+    dfield2 = 2*dfield;
+    dx2 = cos(dfield2);
+    dy2 = sin(dfield2);
 
-    S = S(ceil(rr)+1:end-ceil(rr),ceil(rr)+1:end-ceil(rr));
-    
+    mdx2 = conv2(dx2,mf,'same')./norm;
+    mdy2 = conv2(dy2,mf,'same')./norm;
+
+    mdf = atan2(mdy2,mdx2)/2;
+
+    %Prefered direction (n).
+    nx = cos(mdf);
+    ny = sin(mdf);
+
+    %Director field mean over areas.
+    dx = cos(dfield);
+    dy = sin(dfield);
+
+    mdxdx = conv2(dx.*dx,mf,'same')./norm;
+    mdxdy = conv2(dx.*dy,mf,'same')./norm;
+    mdydy = conv2(dy.*dy,mf,'same')./norm;
+
+    S = (2*(nx.*nx.*mdxdx+2*nx.*ny.*mdxdy+ny.*ny.*mdydy)-1);
+
     %% Save file
     fID = fopen([fpath 'analysis/order/' name],'w');
     fwrite(fID,S,'float');
