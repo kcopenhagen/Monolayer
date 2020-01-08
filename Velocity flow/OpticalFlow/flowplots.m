@@ -198,27 +198,18 @@ plot(cx,cy,'b','LineWidth',1);
 %% Plot negative ones
 
 quivsp = 15;
-im = real2rgb(sqrt(navgvx.^2+navgvy.^2),colorcet('L4'),[0 0.014]);
+im = real2rgb(sqrt(navgvx.^2+navgvy.^2),colorcet('L4'));%,[0 0.014]);
+
+img = image(im);
 
 x = 1:imsize;
 y = 1:imsize;
 [xx,yy] = meshgrid(x,y);
 rr = sqrt((xx-(imsize-1)/2).^2+(yy-(imsize-1)/2).^2);
-imr = im(:,:,1);
-img = im(:,:,2);
-imb = im(:,:,3);
-imr(rr>(imsize-1)/2-2) = 0;
-img(rr>(imsize-1)/2-2) = 0;
-imb(rr>(imsize-1)/2-2) = 0;
-imr(rr>(imsize-1)/2) = 1;
-img(rr>(imsize-1)/2) = 1;
-imb(rr>(imsize-1)/2) = 1;
+circ = rr<(imsize-1)/2;
 
-im(:,:,1) = imr;
-im(:,:,2) = img;
-im(:,:,3) = imb;
+img.AlphaData = circ;
 
-show(im)
 hold on
 xgrid = 1:quivsp:imsize;
 ygrid = 1:quivsp:imsize;
