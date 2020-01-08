@@ -85,10 +85,10 @@ end
 set(ax,'XDir','reverse');
 set(ax,'YDir','normal');
 
-x = 40;
-y = 20;
-plot([x+20 x+172],[y+10 y+10], 'k', 'Linewidth',8)
-plot([x+22 x+170],[y+10 y+10], 'w', 'Linewidth',4)
+% x = 40;
+% y = 20;
+% plot([x+20 x+172],[y+10 y+10], 'k', 'Linewidth',8)
+% plot([x+22 x+170],[y+10 y+10], 'w', 'Linewidth',4)
 % 
 % text(x+5,y-14,'20\mum','Color','k','FontSize',38,'FontName','Helvetica')
 % text(x+5,y-16,'20\mum','Color','k','FontSize',38,'FontName','Helvetica')

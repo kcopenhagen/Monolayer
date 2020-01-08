@@ -5,7 +5,6 @@ function dfieldfigure
 %t = 10;
 % fpath = '/Users/kcopenhagen/Documents/Data/Monolayer/High frame rate/Data/190117KC2b/';
 % t = 119;
-load('orientcmap','mymap');
 
 fpath = '/Users/kcopenhagen/Documents/Data/Monolayer/High frame rate/Data/190111KC2/';
 t = 10;
@@ -21,7 +20,7 @@ t = 10;
 %     l = imrotate(l,-15,'crop');
     holes = loaddata(fpath,t,'manuallayers','int8')<1;
     
-    im = real2rgb(dir,mymap,[-pi/2 pi/2]);
+    im = real2rgb(dir,orientcmap,[-pi/2 pi/2]);
     figure('Units','pixels','PaperUnits','points',...
         'Position',[0 0 672 414],'PaperPosition',[0 0 672 414],'PaperSize',[672 414]);
     
@@ -31,24 +30,24 @@ t = 10;
     
     hold(ax,'on');
     S = loaddata(fpath,t,'order','float');
-    im = real2rgb(S,colorcet('L6'),[0 1]);
-    im(:,:,1) = ~holes.*im(:,:,1);
-    im(:,:,2) = ~holes.*im(:,:,2);
-    im(:,:,3) = ~holes.*im(:,:,3);
+%     im = real2rgb(S,colorcet('L6'),[0 1]);
+%     im(:,:,1) = ~holes.*im(:,:,1);
+%     im(:,:,2) = ~holes.*im(:,:,2);
+%     im(:,:,3) = ~holes.*im(:,:,3);
     im(:,:,1) = 2*l.*im(:,:,1);
     im(:,:,2) = 2*l.*im(:,:,2);
     im(:,:,3) = 2*l.*im(:,:,3);
     im(im>1) = 1;
-    im = rot90(im,2);
+%     im = rot90(im,2);
     imshow(im)
     axis off
     hold on
     
-    x = 870;
-    y = 700;
-    plot([x+30-75 x+107],[y+24 y+24], 'k', 'Linewidth',8)
-    plot([x+32-75 x+105],[y+24 y+24], 'w', 'Linewidth',4)
-    
+%     x = 870;
+%     y = 700;
+%     plot([x+30-75 x+107],[y+24 y+24], 'k', 'Linewidth',8)
+%     plot([x+32-75 x+105],[y+24 y+24], 'w', 'Linewidth',4)
+%     
 %     text(x+5,y-14,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
 %     text(x+5,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
 %     text(x+6,y-15,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
@@ -59,11 +58,11 @@ t = 10;
 %     text(x+4,y-16,'10\mum','Color','k','FontSize',26,'FontName','Latin Modern Math')
 %     text(x+5,y-15,'10\mum','Color','w','FontSize',26,'FontName','Latin Modern Math')
 %     
-    zix = [568 672];
-    ziy = [376 454];
-    plot([zix(1) zix(2) zix(2) zix(1) zix(1)],[ziy(1) ziy(1) ziy(2) ziy(2) ziy(1)],...
-        'LineWidth',1,'Color','k');
-    
+%     zix = [568 672];
+%     ziy = [376 454];
+%     plot([zix(1) zix(2) zix(2) zix(1) zix(1)],[ziy(1) ziy(1) ziy(2) ziy(2) ziy(1)],...
+%         'LineWidth',1,'Color','k');
+%     
     
     %% Zoomed in
     
