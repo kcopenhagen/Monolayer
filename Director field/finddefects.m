@@ -90,6 +90,7 @@ function adefs = finddefects(fpath, t)
             ny = sin(-dirt);
             nyny = ny.*ny;
             nxny = nx.*ny;
+            
             [dnxnxdx, ~] = gradient(nxnx);
             [dnxnydx, dnxnydy] = gradient(nxny);
             [~, dnynydy] = gradient(nyny);
@@ -97,6 +98,7 @@ function adefs = finddefects(fpath, t)
             dnxnydx = dnxnydx(r,r);
             dnxnydy = dnxnydy(r,r);
             dnynydy = dnynydy(r,r);
+            
             psiprime = atan2(dnxnydx+dnynydy,dnxnxdx+dnxnydy);
             d = [d; [cos(-psiprime/3) sin(-psiprime/3)]];
         else
@@ -106,7 +108,16 @@ function adefs = finddefects(fpath, t)
     
     x = Centx;
     y = Centy;
-    adefs = struct('x',num2cell(x'),'y',num2cell(y'),'q',num2cell(q'),'d',num2cell(d,2));
+    
+    dx = x-x';
+    dy = y-y';
+    dr = sqrt(dx.^2+dy.^2);
+    dr(dr==0) = NaN;
+    iso = double(min(dr)>37);
+    del = (x<28)|(x>997)|(y<28)|(y>741);
+    
+    adefs = struct('x',num2cell(x'),'y',num2cell(y'),'q',num2cell(q'),'d',num2cell(d,2),'iso',num2cell(iso'));
+    adefs(del) = [];
     adefs([adefs.q]==0) = [];
     
 end
