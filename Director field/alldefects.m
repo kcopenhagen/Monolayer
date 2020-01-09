@@ -24,18 +24,22 @@ function adefs = alldefects(fpath)
     tt = [];
     id = [];
     ts = [];
+    iso = [];
     
     for t = 1:N
         defs = finddefects(fpath,t);
         xt = [defs.x];
         yt = [defs.y];
         qt = [defs.q];
+        isot = [defs.iso];
+        
         dt = zeros(numel(xt),2);
         dtt = [defs.d];
         dt(:,1) = dtt(1:2:end-1);
         dt(:,2) = dtt(2:2:end);
         x = [x; xt'];
         y = [y; yt'];
+        iso = [iso; isot'];
         q = [q; qt'];
         d = [d; dt];
         tt = [tt; times(t)*ones(numel(xt),1)];
@@ -87,8 +91,14 @@ function adefs = alldefects(fpath)
         end
         
     end
+    [a,b] = histcounts(id,'BinMethod','integer');
+    ids = b+0.5;
+    ids(a<10) = [];
+    good = ismember(id,ids);
     adefs = struct('x',num2cell(x),'y',num2cell(y),'q',num2cell(q),...
-        'd',num2cell(d,2),'tt',num2cell(tt),'ts',num2cell(ts),'id',num2cell(id));
+        'd',num2cell(d,2),'tt',num2cell(tt),'ts',num2cell(ts),...
+        'id',num2cell(id),'iso',num2cell(iso));
+    adefs = adefs(good);
 end
 
 
