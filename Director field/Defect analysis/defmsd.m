@@ -24,16 +24,7 @@ for f = 1:numel(folders) %Loop through experiments.
     %Load in and prep values.
     fpath = [folders(f).folder '/' folders(f).name '/'];
     XYcal = getXYcal(fpath);
-    adefs = alldefects(fpath);
-    
-    %Find the defects that existed for at least 10 frames.
-    [a,b] = histcounts([adefs.id],'BinMethod','integer');
-    b = b(2:end)-0.5;
-
-    ids = b(a>10);
-    ids = ismember([adefs.id],ids);
-    
-    adefs(~ids) = [];
+    load([fpath 'adefs.mat'],'adefs');
     
     deflabs = unique([adefs.id]);
 

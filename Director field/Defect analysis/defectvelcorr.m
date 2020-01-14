@@ -44,7 +44,7 @@ for f = 1:numel(folders)
     fpath = [folders(f).folder '/' folders(f).name '/'];
     XYcal = getXYcal(fpath);
 
-    adefs= alldefects(fpath);
+    load([fpath 'adefs.mat'],'adefs');
 
     ids = unique([adefs.id]);
 
