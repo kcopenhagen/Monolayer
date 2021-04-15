@@ -16,7 +16,7 @@ t = 10;
         'Xtick',[],'Ytick',[],'Ydir','reverse');
     imagesc(lays)
     axis off
-    cmap = myxocmap;
+    cmap = flipud(myxocmap);
     set(gca,'ColorMap',cmap);
     hold on
     x = 870;

@@ -50,9 +50,12 @@ function [ppr,pnr,nnr,dr] = defectinteractions_distance(datapath)
     plot(XYcal*(eds(2:end)-5),pnys,'Color',[0.8 0 0.8],'LineWidth',2)
     plot(XYcal*(eds(2:end)-5),nnys,'b','LineWidth',2)
     plot([0 100],[0 0],'k--','LineWidth',1.5)
-    xlim([0 50])
-    set(gca,'FontSize',12);
-    xlabel('Distance (\mum)');
-    ylabel('U(r) = -ln g(r)')
+    xlim([0 30])
+    set(gca,'FontSize',12,'LineWidth',2);
+    xticklabels([])
+    yticklabels([])
+    
+%     xlabel('Distance (\mum)');
+%     ylabel('U(r) = -ln g(r)')
     
 end

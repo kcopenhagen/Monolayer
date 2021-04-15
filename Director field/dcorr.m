@@ -62,7 +62,7 @@ function dcorr(datapath)
     errorbar(ars,adc,(adcerr./sqrt(n)),'.k','LineWidth',2)
     %plot(ars,adc,'k','LineWidth',2)
     hold on
-    plot(ars,0.2404+0.769*exp(-0.059*ars),'r--','LineWidth',2)
+    plot(ars,0.2404+0.769*exp(-0.059*ars),'--','LineWidth',2,'Color',[0.5 0.5 0.5])
     set(ax,'FontSize',12,'LineWidth',2)
     hold on
     

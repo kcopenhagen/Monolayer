@@ -59,7 +59,7 @@ handles.ll = NaN;
 handles.copylay = [];
 handles.moving = 0;
 handles.lims = [0 512; 0 384];
-handles.lays = loaddata(handles.fpath.String,1,'mlays','int8');
+handles.lays = round(imgaussfilt(loaddata(handles.fpath.String,1,'covid_layers','int8'),3));
 handles.laychs = [];
 handles.undol = 0;
 handles.idx = [];
@@ -112,7 +112,7 @@ function selectbut_Callback(hObject, ~, handles)
 % handles    structure with handles and user data (see GUIDATA)
 folder = uigetdir([handles.fpath.String '../']);
 handles.fpath.String = [folder '/'];
-[~,~,~] = mkdir([handles.fpath.String '/analysis/manuallayers/']);
+[~,~,~] = mkdir([handles.fpath.String '/analysis/manuallayers2/']);
 guidata(hObject,handles);
 
 function ct_Callback(hObject, eventdata, handles)
@@ -125,10 +125,10 @@ function ct_Callback(hObject, eventdata, handles)
 ct = str2double(handles.ct.String);
 
 try
-    handles.lays = loaddata(handles.fpath.String,ct,'manuallayers','int8');
+    handles.lays = loaddata(handles.fpath.String,ct,'manuallayers2','int8');
     
 catch
-    handles.lays = loaddata(handles.fpath.String,ct,'mlays','int8');
+    handles.lays = round(imgaussfilt(loaddata(handles.fpath.String,ct,'covid_layers','int8'),3));
 end
 
 handles.lays(handles.lays<0) = 0;
@@ -149,7 +149,7 @@ end
 
 % --- Executes on button press in nextlayer.
 function nextlayer_Callback(hObject, eventdata, handles)
-[~,~,~] = mkdir([handles.fpath.String '/analysis/manuallayers/']);
+[~,~,~] = mkdir([handles.fpath.String '/analysis/manuallayers2/']);
 % hObject    handle to nextlayer (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -158,15 +158,15 @@ if isempty(handles.laychs)
     ct = str2double(handles.ct.String);
     if ct == 1
         try
-            handles.lays = loaddata(handles.fpath.String,ct,'manuallayers','int8');
+            handles.lays = loaddata(handles.fpath.String,ct,'manuallayers2','int8');
         catch
-            handles.lays = loaddata(handles.fpath.String,ct,'mlays','int8');
+            handles.lays = round(imgaussfilt(loaddata(handles.fpath.String,ct,'covid_layers','int8'),3));
         end
         handles.lays(handles.lays<0) = 0;
         name = sprintf('%06d.bin', ct-1);
         
-        if exist([handles.fpath.String '/analysis/manuallayers/' name],'file')~=2
-            fID = fopen([handles.fpath.String '/analysis/manuallayers/' name],'w');
+        if exist([handles.fpath.String '/analysis/manuallayers2/' name],'file')~=2
+            fID = fopen([handles.fpath.String '/analysis/manuallayers2/' name],'w');
             fwrite(fID,handles.lays,'int8');
             fclose(fID);
         end
@@ -179,15 +179,15 @@ if isempty(handles.laychs)
     while isempty(laych)
         
         try 
-            handles.lays = loaddata(handles.fpath.String,ct,'manuallayers','int8');
+            handles.lays = loaddata(handles.fpath.String,ct,'manuallayers2','int8');
         catch
-            handles.lays = loaddata(handles.fpath.String,ct,'mlays','int8');
+            handles.lays = round(imgaussfilt(loaddata(handles.fpath.String,ct,'covid_layers','int8'),3));
         end
         handles.lays(handles.lays<0) = 0;
 
         name = sprintf('%06d.bin', ct-1);
-        if exist([handles.fpath.String '/analysis/manuallayers/' name],'file')~=2
-            fID = fopen([handles.fpath.String '/analysis/manuallayers/' name],'w');
+        if exist([handles.fpath.String '/analysis/manuallayers2/' name],'file')~=2
+            fID = fopen([handles.fpath.String '/analysis/manuallayers2/' name],'w');
             fwrite(fID,handles.lays,'int8');
             fclose(fID);
         end
@@ -213,9 +213,9 @@ if isempty(handles.laychs)
 else
     ct = handles.laychs(1).t;
     try 
-        handles.lays = loaddata(handles.fpath.String,ct,'manuallayers','int8');
+        handles.lays = loaddata(handles.fpath.String,ct,'manuallayers2','int8');
     catch
-        handles.lays = loaddata(handles.fpath.String,ct,'mlays','int8');
+        handles.lays = round(imgaussfilt(loaddata(handles.fpath.String,ct,'covid_layers','int8'),3));
     end
     handles.lays(handles.lays<0) = 0;
     handles.ct.String = num2str(ct);
@@ -233,9 +233,9 @@ end
 
 guidata(hObject,handles);
 try
-    handles.lays = loaddata(handles.fpath.String,ct,'manuallayers','int8');
+    handles.lays = loaddata(handles.fpath.String,ct,'manuallayers2','int8');
 catch
-    handles.lays = loaddata(handles.fpath.String,ct,'mlays','int8');
+    handles.lays = round(imgaussfilt(loaddata(handles.fpath.String,ct,'covid_layers','int8'),3));
 end
 handles.lays(handles.lays<0) = 0;
 guidata(hObject,handles);
@@ -249,34 +249,30 @@ if eventdata.Key == "leftarrow"
         handles.ct.String = num2str(nt);
         try
             handles.lays = loaddata(handles.fpath.String,...
-                nt,'manuallayers','int8');
+                nt,'manuallayers2','int8');
         catch
-            handles.lays = loaddata(handles.fpath.String...
-                ,nt,'mlays','int8');
+            handles.lays = round(imgaussfilt(loaddata(handles.fpath.String...
+                ,nt,'covid_layers','int8'),3));
         end
         handles.lays(handles.lays<0) = 0;
         guidata(hObject,handles);
 
     end
-end
-if eventdata.Key == "rightarrow"
+elseif eventdata.Key == "rightarrow"
     nt = str2double(handles.ct.String)+1;
     handles.ct.String = num2str(nt);
     try
         handles.lays = loaddata(handles.fpath.String,...
             nt,...
-            'manuallayers','int8');
+            'manuallayers2','int8');
     catch
-        handles.lays = loaddata(handles.fpath.String,...
+        handles.lays = round(imgaussfilt(loaddata(handles.fpath.String,...
             nt,...
-            'mlays','int8');
+            'covid_layers','int8'),3));
     end
     handles.lays(handles.lays<0) = 0;
     guidata(hObject,handles);
-
-end
-
-if eventdata.Key == 'm'
+elseif eventdata.Key == 'm'
     handles.CP = get(handles.laserim,'CurrentPoint');
     handles.moving = 1;
 end
@@ -352,7 +348,7 @@ try
     lm1 = lm1./imgaussfilt(lm1,64);
     lm1 = normalise(lm1);
 
-    laysm1 = loaddata(handles.fpath.String,ct-1,'manuallayers','int8');
+    laysm1 = loaddata(handles.fpath.String,ct-1,'manuallayers2','int8');
     imm1 = real2rgb(laysm1,colorcet('R2'),[0 3]);
     imm1 = imm1.*lm1*1.8;
     imm1(imm1>1) = 1;
@@ -382,7 +378,7 @@ function savebut_Callback(hObject, eventdata, handles)
 data = handles.lays;
 
 name = sprintf('%06d.bin', str2double(handles.ct.String)-1);
-fID = fopen([handles.fpath.String '/analysis/manuallayers/' name],'w');
+fID = fopen([handles.fpath.String '/analysis/manuallayers2/' name],'w');
 fwrite(fID,data,'int8');
 fclose(fID);
 handles.msgtxt.String = "Saved...";

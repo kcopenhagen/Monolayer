@@ -2,7 +2,7 @@ function sld = sl(vx, vy, u0, L)
 
     hmax = 10;
     ht = 1;
-    TOL = 0.0001;
+    TOL = 1;
     sz = size(vx);
     
     function f = ff(u)
@@ -34,13 +34,26 @@ function sld = sl(vx, vy, u0, L)
             vx21 = vx(uy2,ux1);
             vx22 = vx(uy2,ux2);
 
-            vxu = 1/((ux2-ux1)*(uy2-uy1))*[(ux2-ux) (ux-ux1)]*[vx11 vx12; vx21 vx22]...
-                *[uy2-uy; uy-uy1];
-
             vy11 = vy(uy1,ux1);
             vy12 = vy(uy1,ux2);
             vy21 = vy(uy2,ux1);
             vy22 = vy(uy2,ux2);
+            
+            if vx11*vx12+vy11*vy12<0
+                vx12 = -vx12;
+                vy12 = -vy12;
+            end
+            if vx12*vx22+vy12*vy22<0
+                vx22 = -vx22;
+                vy22 = -vy22;
+            end
+            if vx22*vx21+vy22*vy21<0
+                vx21 = -vx21;
+                vy21 = -vy21;
+            end
+            
+            vxu = 1/((ux2-ux1)*(uy2-uy1))*[(ux2-ux) (ux-ux1)]*[vx11 vx12; vx21 vx22]...
+                *[uy2-uy; uy-uy1];
 
             vyu = 1/((ux2-ux1)*(uy2-uy1))*[(ux2-ux) (ux-ux1)]*[vy11 vy12; vy21 vy22]...
                 *[uy2-uy; uy-uy1];
@@ -51,30 +64,72 @@ function sld = sl(vx, vy, u0, L)
 
     end
 
-    function [uh, hn] = sigma(u,h)
+    function [uh, hn, slfn] = sigma(u,h,slf)
         
-        k1 = h*ff(u);
-        k2 = h*ff(u+1/2*k1);
-        k3 = h*ff(u+1/2*k2);
-        k4 = h*ff(u+k3);
+        ffuk1 = slf;
+        k1 = h*ffuk1;
+        
+        ffuk2 = ff(u+1/2*k1);
+        if sum(ffuk1.*ffuk2)<0
+            ffuk2 = -ffuk2;
+        end
+        k2 = h*ffuk2;
+        
+        ffuk3 = ff(u+1/2*k2);
+        if sum(ffuk2.*ffuk3)<0
+            ffuk3 = -ffuk3;
+        end
+        k3 = h*ffuk3;
+        
+        ffuk4 = ff(u+k3);
+        if sum(ffuk3.*ffuk4)<0
+            ffuk4 = -ffuk4;
+        end
+        k4 = h*ffuk4;
         
         uh = u + k1/6 + k2/3 + k3/3 + k4/6;
+        ffuh = ff(uh);
+        if sum(ffuh.*ffuk1)<0
+            ffuh = -ffuh;
+        end
+        D = 1/6*(k4 - h*ffuh);
         
-        D = 1/6*(k4 - h*ff(uh));
+        
         while sqrt(D(1)^2+D(2)^2)>TOL && h>0.1 && ~isnan(uh(1)) && ~isnan(uh(2))
             h = h*(0.9*TOL/sqrt(D(1)^2+D(2)^2))^(1/5);
-            k1 = h*ff(u);
-            k2 = h*ff(u+1/2*k1);
-            k3 = h*ff(u+1/2*k2);
-            k4 = h*ff(u+k3);
+            ffuk1 = slf;
+            k1 = h*ffuk1;
+
+            ffuk2 = ff(u+1/2*k1);
+            if sum(ffuk1.*ffuk2)<0
+                ffuk2 = -ffuk2;
+            end
+            k2 = h*ffuk2;
+
+            ffuk3 = ff(u+1/2*k2);
+            if sum(ffuk2.*ffuk3)<0
+                ffuk3 = -ffuk3;
+            end
+            k3 = h*ffuk3;
+
+            ffuk4 = ff(u+k3);
+            if sum(ffuk3.*ffuk4)<0
+                ffuk4 = -ffuk4;
+            end
+            k4 = h*ffuk4;
+
             uh = u + k1/6 + k2/3 + k3/3 + k4/6;
-            D = 1/6*(k4 - h*ff(uh));
+            ffuh = ff(uh);
+            if sum(ffuh.*ffuk1)<0
+                ffuh = -ffuh;
+            end
+            D = 1/6*(k4 - h*ffuh);
         end
         
         if (abs(h)<0.1 || uh(1)<=0 || uh(2)<=0 || uh(1)>sz(2) || uh(2)>sz(1))
             uh = [NaN; NaN];
         end
-        
+        slfn = ffuh;
         hn = min(abs(h),hmax)*h/abs(h);
     end
 
@@ -114,20 +169,24 @@ function sld = sl(vx, vy, u0, L)
 
     slr = NaN(L,2);
     sld = NaN(L,2);
+    slf = NaN(L,2);
     slr(1,:) = u0;
     sld(1,:) = u0;
+    slf(1,:) = ff(u0);
     it = 2;
     jt = 2;
     u0s = ht;
     h = hmax;
     while (it<=L)
         
-        [uh, hn] = sigma(slr(jt-1,:),h);
+        [uh, hn, slfn] = sigma(slr(jt-1,:),h,slf(jt-1,:));
         
         if isnan(uh(1))
             break;
         end
+        
         slr(jt,:) = uh;
+        slf(jt,:) = slfn;
         
         if (hn<ht)
             break;

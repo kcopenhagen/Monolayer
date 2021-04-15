@@ -8,11 +8,13 @@ for i = 1:numel(acells)
         speeds = [speeds; speed];
     end
 end
-
-histogram(speeds,'FaceColor','k')
-set(gca,'FontSize',12)
-xlabel('Speed (\mum/min)')
-ylabel('Count')
+eds = [0:0.2:4];
+histogram(speeds,eds,'FaceColor','k','LineWidth',2)
+set(gca,'LineWidth',2)
+xticks(0:4)
+%yticks(0e3:1e3:4e3)
+% xticklabels([])
+% yticklabels([])
 
 %% Live cell speed histogram
 ids = unique([acells.id]);
@@ -57,7 +59,7 @@ while i < numel(ids)
     %%
     id = ids(i);
     ccells = acells([acells.id] == id);
-    mask = zeros(size(lBW));
+    mask = zeros(768,1024);
     vs = [ccells.v];
     vxs = vs(1:2:end-1);
     vys = vs(2:2:end);
@@ -119,22 +121,22 @@ while i < numel(ids)
     end
     acells([acells.id]==ids(i)) = ccells;
     
-    figure('Units','pixels','Position',[10 10 400 400]);
-    imagesc(cx+cy,[-1 1]);
-    colormap gray
-    hold on
-    
-    plot(C(1,:),C(2,:),'r.');
-    plot(rts,rts,'y+');
-    plot(orts,orts,'c.');
-
-    pause(1);
-    close all
-    
+%     figure('Units','pixels','Position',[10 10 400 400]);
+%     imagesc(cx+cy,[-1 1]);
+%     colormap gray
+%     hold on
+%     
+%     plot(C(1,:),C(2,:),'r.');
+%     plot(rts,rts,'y+');
+%     plot(orts,orts,'c.');
+% 
+%     pause(1);
+%     close all
+%     
 end
 
 %% Video of 1 cells mask
-
+i = i+1;
 ccells = acells([acells.id] == ids(i));
 clear F2
 F2(numel(ccells)) = struct('cdata',[],'colormap',[]);
@@ -163,8 +165,8 @@ v.FrameRate = 30;
 v.Quality = 15;
 open(v);
 
-for t = 1:numel(F)/2
-    writeVideo(v,F(t));
+for t = 1:numel(F2)
+    writeVideo(v,F2(t).cdata);
 end
 close(v);
 
@@ -184,11 +186,14 @@ for i = 1:numel(ids)
         end
     end
 end
-
-histogram(revTs/60,'FaceColor','y');
+eds = 0:15/8:15;
+histogram(revTs/60,eds,'FaceColor','k','LineWidth',2);
 set(gca,'FontSize',12);
-xlabel('Reversal period')
-ylabel('Count')
+xticks([0 5 10 15])
+yticks([0 20 40 60])
+% yticklabels([])
+% xticklabels([])
+set(gca,'LineWidth',2)
 
 
 %% Alternative reversal period calculation.

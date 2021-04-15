@@ -4,7 +4,7 @@ function Layervid(datapath)
     else
         fpath = [uigetdir '/'];
     end
-    files = dir([fpath 'analysis/manuallayers/']);
+    files = dir([fpath 'analysis/covid_layers/']);
     dirFlags = [files.isdir];
     lfiles = files(~dirFlags);
     N = numel(lfiles);
@@ -18,16 +18,16 @@ function Layervid(datapath)
         l = laserdata(fpath,t);
         l = l./imgaussfilt(l,64);
         l = normalise(l);
-        lays = loaddata(fpath,t,'manuallayers','int8');
+        lays = loaddata(fpath,t,'covid_layers','int8');
 
-        im = real2rgb(lays,myxocmap,[0 2]);
+        im = real2rgb(lays,flipud(myxocmap),[0 2]);
         im(:,:,1) = l.*im(:,:,1)*1.6;
         im(:,:,2) = l.*im(:,:,2)*1.6;
         im(:,:,3) = l.*im(:,:,3)*1.6;
         im(im>1) = 1;
         fr = tandscalebartext(fpath,t,im);
         writeVideo(v,fr);
-        
     end
+    
     close(v);
 end

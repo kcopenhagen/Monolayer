@@ -3,6 +3,8 @@ files = dir('/Users/kcopenhagen/Documents/Data/Monolayer/High frame rate/Labeled
 for r1 = 1
     for r2 = 4
 densities = [];
+ns = [];
+areas = [];
     for f = 1:numel(files)
     load([files(f).folder '/' files(f).name ],'p0s','p1s','p2s','ids');
     temp = strsplit(files(f).name,'t');
@@ -51,6 +53,8 @@ densities = [];
     im = imdilate(im>0,se);
     mask = imclose(im,strel('disk',r2));
     l = laserdata(fpath,t-1);
+    ns = [ns; id];
+    areas = [areas; (0.133^2*sum(mask(:)))];
     densities = [densities; id/(0.133^2*sum(mask(:)))];
     im = zeros(768,1024);
 
@@ -85,6 +89,8 @@ densities = [];
     im = imdilate(im>0,se);
     mask = imclose(im,strel('disk',r2));
     l = laserdata(fpath,t);
+    ns = [ns; id];
+    areas = [areas; (0.133^2*sum(mask(:)))];
     densities = [densities; id/(0.133^2*sum(mask(:)))];
     im = zeros(768,1024);
 
@@ -120,8 +126,10 @@ densities = [];
     im = imdilate(im>0,se);
     mask = imclose(im,strel('disk',r2));
     l = laserdata(fpath,t+1);
+    ns = [ns; id];
+    areas = [areas; (0.133^2*sum(mask(:)))];
     densities = [densities; id/(0.133^2*sum(mask(:)))];
-
+    
     end
 plot(densities)
 hold on

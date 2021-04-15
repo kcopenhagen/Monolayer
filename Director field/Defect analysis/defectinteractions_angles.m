@@ -283,7 +283,7 @@ function defectinteractions_angles(datapath)
     xlim([-1000 1000])
     ylim([-1000 1000])    
     
-        axes('Units','pixels','Position',[25+300 80+300 90 90])
+    axes('Units','pixels','Position',[25+300 80+300 90 90])
     x = -100:100;
     y = -100:100;
     [xx,yy] = meshgrid(x,y);

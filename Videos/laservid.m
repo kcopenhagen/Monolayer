@@ -24,14 +24,18 @@ function laservid(datapath)
     files(del) = [];
     
     N = numel(files);
-    
     for t = 1:N
 
         l = laserdata(fpath, t);
         l = l./imgaussfilt(l,64);
         l = normalise(l);
+        [cts,eds] = histcounts(l(:));
+        [m,i] = max(cts);
+        l0 = (eds(i)+eds(i+1))/2;
+        l = l-l0;
         
-        im = real2rgb(l,gray);
+        im = real2rgb(l,gray,[-0.5 0.5]);
+        fr = im;
         fr = tandscalebartext(fpath,t,im);
         writeVideo(v, fr);
     end

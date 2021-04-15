@@ -16,7 +16,7 @@ function dfield(fpath,t,n)
     dx(end/2+1/2,:) = dl;
     dy = zeros(numel(dl),numel(dl));
     dy(:,end/2+1/2) = dl;
-
+    
     % Calculate the x and y gradients of the laser image.
     ls = padarray(ls,[1,1],'replicate','both');
     

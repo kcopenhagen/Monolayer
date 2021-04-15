@@ -49,7 +49,7 @@ function vcorr(datapath)
 %     l = (find(abs(adc/av-0.5)==min(abs(adc/av-0.5)))-1)/2
 %     plot([l l],[0 0.5],'k--')
 %     plot([0 l],[0.5 0.5],'k--')
-    plot(ars,exp(-(1/3.9)*ars),'r--','LineWidth',2)
+    plot(ars,exp(-(1/3.9)*ars),'--','LineWidth',2,'Color',[0.5 0.5 0.5])
     set(gca,'FontSize',12,'LineWidth',2)
     hold on
     

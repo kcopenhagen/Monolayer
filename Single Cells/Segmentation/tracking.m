@@ -3,7 +3,7 @@ clab = 1;
 acells = [];
 
 %% The loop
-
+fdzgpo
 for f = 1:numel(fpaths)
     %% Find all the cells.
     fpath = fpaths{f};

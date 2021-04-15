@@ -8,7 +8,7 @@ function adefs = finddefects(fpath, t)
     re = makeringelement(r);
     S = loaddata(fpath,t,'order','float');
     dfield = loaddata(fpath,t,'dfield','float');
-    lays = loaddata(fpath,t,'manuallayers','int8');
+    lays = loaddata(fpath,t,'covid_layers','int8');
     CC = bwconncomp(lays<=0);
     P = regionprops(CC,'PixelIdxList','MinorAxisLength');
     P([P.MinorAxisLength]<26) = [];

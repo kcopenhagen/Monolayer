@@ -30,7 +30,11 @@ function heightvid(datapath)
         h = h-imgaussfilt(h,64);
         h = h-min(h(:));
         
-        im = real2rgb(h,myxocmap,[0 1]);
+        [cts,eds] = histcounts(h(:));
+        [m,i] = max(cts);
+        h0 = (eds(i)+eds(i+1))/2;
+        h = h-h0;
+        im = real2rgb(h,flipud(myxocmap),[-0.2 0.15]);
         fr = tandscalebartext(fpath,t,im);
         writeVideo(v, fr);
     end

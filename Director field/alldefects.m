@@ -1,18 +1,8 @@
 function adefs = alldefects(fpath)
     
-    files = dir([fpath 'analysis/manuallayers/']);
-    dirFlags = [files.isdir];
-    files = files(~dirFlags);
-
-    del = [];
-    for i = 1:numel(files)
-        if files(i).name(1) == '.'
-            del = [del; i];
-        end
-    end
-    files(del) = [];
+    ts = getts(fpath);
     
-    N = numel(files);
+    N = numel(ts);
     
     fid = fopen([fpath 'times.txt']);
     times = fscanf(fid,'%f');
@@ -93,7 +83,7 @@ function adefs = alldefects(fpath)
     end
     [a,b] = histcounts(id,'BinMethod','integer');
     ids = b+0.5;
-    ids(a<10) = [];
+    ids(a<1) = [];
     good = ismember(id,ids);
     adefs = struct('x',num2cell(x),'y',num2cell(y),'q',num2cell(q),...
         'd',num2cell(d,2),'tt',num2cell(tt),'ts',num2cell(ts),...

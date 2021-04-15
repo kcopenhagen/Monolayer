@@ -21,7 +21,7 @@ t = 10;
     imagesc(ax,h)
     set(ax,'Box','on');
     axis off
-    cmap = myxocmap;
+    cmap = flipud(myxocmap);
 
     set(gca,'ColorMap',cmap);
     cb = colorbar;

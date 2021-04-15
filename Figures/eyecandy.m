@@ -9,22 +9,20 @@ ax = axes('Units','pixels','Position',[10 20 512 384],'LineWidth',2,...
 
 l = laserdata(fpaths{3},10);
 l = l./imgaussfilt(l,64);
-l = 3*normalise(l)-0.4;
-lays = loaddata(fpaths{3},10,'manuallayers','int8');
+l = normalise(l);
+lays = loaddata(fpaths{3},10,'covid_layers','int8');
 height = heightdata(fpaths{3},1);
 height = height - imgaussfilt(height,128)+0.3;
-im = real2rgb(height,myxocmap,[0 0.5]);
-imr = im(:,:,1);
-img = im(:,:,2);
-imb = im(:,:,3);
-imr = imr.*l;
-img = img.*l;
-imb = imb.*l;
-im(:,:,1) = imr;
-im(:,:,2) = img;
-im(:,:,3) = imb;
-imshow(im)
-axis off
+
+% Height overlay.
+im = real2rgb(height,flipud(myxocmap),[0 0.5]);
+I = imshow(im);
+set(I,'AlphaData',l);
+
+% Just laser image.
+% im = real2rgb(l,gray,[0 2]);
+% imshow(im)
+% axis off
 
 colormap gray
 caxis([0.7 1.3])
@@ -33,12 +31,12 @@ hold on
 defs = load([fpaths{3} 'adefs.mat']);
 
 defs = defs.adefs;
-cdefs = defs([defs.ts]==1);
+cdefs = defs([defs.ts]==10);
 l = 35;
 lw = 6;
 ms = 45;
-ncol = [0 115 178]/255;
-pcol = [230 31 15]/255;
+ncol = [0 115 178]/255/2;
+pcol = [230 31 15]/255/2;
 ncolrim = ncol;
 pcolrim = pcol;
 % ncolrim = [0.5 0.9 1];
@@ -84,12 +82,12 @@ end
 
 set(ax,'XDir','reverse');
 set(ax,'YDir','normal');
-
+% 
 % x = 40;
 % y = 20;
 % plot([x+20 x+172],[y+10 y+10], 'k', 'Linewidth',8)
 % plot([x+22 x+170],[y+10 y+10], 'w', 'Linewidth',4)
-% 
+
 % text(x+5,y-14,'20\mum','Color','k','FontSize',38,'FontName','Helvetica')
 % text(x+5,y-16,'20\mum','Color','k','FontSize',38,'FontName','Helvetica')
 % text(x+6,y-15,'20\mum','Color','k','FontSize',38,'FontName','Helvetica')

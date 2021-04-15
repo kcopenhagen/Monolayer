@@ -1,9 +1,14 @@
 function [dtheta,magrat] = veri_Oflow(nf,gf,imf)
-
+%%
+testies = 86;
+meandx = [];
+meandy = [];
+for testt = testies
 files = dir('/Users/kcopenhagen/Documents/Data/Monolayer/High frame rate/Labeledflows/*mat');
 dtheta = [];
 magrat = [];
-
+dx = [];
+dy = [];
 for f = 1:numel(files)
     load([files(f).folder '/' files(f).name ],'p0s','p1s','p2s','ids');
     temp = strsplit(files(f).name,'t');
@@ -34,16 +39,25 @@ for f = 1:numel(files)
         inds = sub2ind(size(Vx),round(ys),round(xs));
         %cvx = flow.Vx(inds);
         %cvy = flow.Vy(inds);
-        cvx = Vx(inds);
-        cvy = Vy(inds);
+        cvx = 86*Vx(inds);
+        cvy = 86*Vy(inds);
         
         lvx = p2s(:,1)-p0s(:,1);
         lvy = p2s(:,2)-p0s(:,2);
-
+        lvx = 0.133*lvx/(dt1+dt2);
+        lvy = 0.133*lvy/(dt1+dt2);
+        
         lvmag = sqrt(lvx.^2+lvy.^2);
         cvmag = sqrt(cvx.^2+cvy.^2);
 
         dtheta = [dtheta; acos((cvx.*lvx+cvy.*lvy)./(cvmag.*lvmag))];
         magrat = [magrat; cvmag./lvmag];
+        dx = [dx; abs(lvx-cvx)];
+        dy = [dy; abs(lvy-cvy)];
     end
+end
+
+meandx = [meandx; sqrt(mean(dx))];
+meandy = [meandy; sqrt(mean(dy))];
+
 end

@@ -4,6 +4,9 @@ function laserwdefsimage
 fpath = '/Users/kcopenhagen/Documents/Data/Monolayer/High frame rate/Data/190111KC2/';
 t = 10;
 
+pcol = [238 34 12]/255;
+ncol = [0 0 255]/255;
+
     l = laserdata(fpath,t);
     
     l = l./imgaussfilt(l,64);

@@ -61,8 +61,8 @@ del = [];
 for i = 1:numel(newlayer)
     if newlayer(i).type ~= "create"
         del = [del; i];
-    elseif newlayer(i).nearest == "wall"
-        del = [del; i];
+%     elseif newlayer(i).nearest == "wall"
+%         del = [del; i];
     end
 end
 
@@ -74,8 +74,8 @@ np = 0;
 for i = 1:numel(loselayer)
     if loselayer(i).type ~= "destroy"
         del = [del; i];
-    elseif loselayer(i).nearest == "wall"
-        del = [del; i];
+%     elseif loselayer(i).nearest == "wall"
+%         del = [del; i];
     end
     
 end
@@ -400,21 +400,25 @@ set(gca,'YLim', [0 max(y)/ceil(csc/ocsc)+2]);
 
 %% Null model, control
 
-fpaths = [];
+fpaths = {};
 times = [];
+defs = {};
 folders = getfold(datapath);
 for f = 1:numel(folders)
+    
     fpath = folders{f};
+    %defs{f} = alldefects(fpath);
     files = dir([fpath '/Laser']);
     dF = [files.isdir];
     files(dF) = [];
     for t = 1:numel(files)
-        fpaths = [fpaths; string(fpath)];
+        fpaths = [fpaths; fpath];
         times = [times; t];
     end
 end
 
-tests = randi(numel(fpaths),[40000 1]);
+tests = randi(numel(times),[10000 1]);
+
 clp = 0;
 cln = 0;
 dps = [];
@@ -423,6 +427,7 @@ pdists = [];
 ndists = [];
 for i = 1:numel(tests)
     load([fpaths{tests(i)} 'adefs.mat'],'adefs');
+    %adefs = defs{fpaths(tests(i))};
     defs = adefs([adefs.ts]==times(tests(i)));
     testx = randi(1024);
     testy = randi(768);
@@ -625,3 +630,259 @@ xticklabels([])
 yticklabels([])
 Yrule = get(ax2,'YRuler');
 Yrule.MinorTickValues = [0.1:0.1:0.9 1:9 10:10:100];
+
+
+%% Distribution to closests defects only.
+% Plot the distribution on separate plots for +/- defects, with errorbars.
+
+pws = 2:10;
+eds = [0 2.^pws];
+
+bcents1 = eds(2:end);
+bcents2 = eds(1:end-1);
+bcents = (bcents1+bcents2)/2;
+
+lpd = sqrt(([newlayer.npx]-[newlayer.x]).^2+([newlayer.npy]-[newlayer.y]).^2);
+lnd = sqrt(([newlayer.nnx]-[newlayer.x]).^2+([newlayer.nny]-[newlayer.y]).^2);
+hpd = sqrt(([newhole.npx]-[newhole.x]).^2+([newhole.npy]-[newhole.y]).^2);
+hnd = sqrt(([newhole.nnx]-[newhole.x]).^2+([newhole.nny]-[newhole.y]).^2);
+
+pcol = [230 31 15]/255;
+ncol = [0 115 178]/255;
+
+lpds = histcounts(lpd,eds,'Normalization','pdf');
+lnds = histcounts(lnd,eds,'Normalization','pdf');
+hpds = histcounts(hpd,eds,'Normalization','pdf');
+hnds = histcounts(hnd,eds,'Normalization','pdf');
+
+lpderrs = lpds.*(1-lpds)/numel(newlayer);
+lnderrs = lnds.*(1-lnds)/numel(newlayer);
+hpderrs = hpds.*(1-hpds)/numel(newhole);
+hnderrs = hnds.*(1-hnds)/numel(newhole);
+
+cdp = histcounts(dps,eds,'Normalization','pdf');
+cdn = histcounts(dns,eds,'Normalization','pdf');
+
+cdperr = cdp.*(1-cdp)/numel(dps);
+cdnerr = cdn.*(1-cdn)/numel(dns);
+
+lpraterrs = (lpds./cdp).^2.*((lpderrs./lpds).^2+(cdperr./cdp).^2);
+lnraterrs = (lnds./cdn).^2.*((lnderrs./lnds).^2+(cdnerr./cdn).^2);
+hpraterrs = (hpds./cdp).^2.*((hpderrs./hpds).^2+(cdperr./cdp).^2);
+hnraterrs = (hnds./cdn).^2.*((hnderrs./hnds).^2+(cdnerr./cdn).^2);
+
+
+fig = figure('Units','pixels','Position',[440 378 560 540]);
+ax = axes(fig,'Units','pixels','Position',[135 345 305 180],...
+    'FontSize', 24,...
+    'Visible','on','FontName', 'Latin Modern Math','layer','top','box','on',...
+    'TickLength',[0.03 0.03],'LineWidth',2,'YScale','log');
+
+hold(ax,'on');
+hold on
+errorbar(ax,0.133*bcents,lpds./cdp,lpraterrs,'Color',pcol,'LineWidth',3)
+errorbar(ax,0.133*bcents,lnds./cdn,lnraterrs,'Color',ncol,'LineWidth',3)
+
+plot(0.133*[0 400],[1 1],'k-.','LineWidth',2)
+xticks([0 5 10 15 20])
+xlim([0 20])
+ylim([0.5 150])
+xticklabels([]);
+yticklabels([]);
+Yrule = get(ax,'YRuler');
+Yrule.MinorTickValues = [0.1:0.1:0.9 1:9 10:10:100];
+
+ax2 = axes(fig,'Units','pixels','Position',[135 135 305 180],...
+    'FontSize', 24,...
+    'Visible','on','FontName', 'Latin Modern Math','layer','top','box','on',...
+    'TickLength',[0.03 0.03],'LineWidth',2,'YScale','log');
+hold(ax2,'on');
+
+errorbar(ax2,0.133*bcents,hnds./cdn,hnraterrs,'Color',ncol,'LineWidth',3)
+hold on
+errorbar(ax2,0.133*bcents,hpds./cdp,hpraterrs,'Color',pcol,'LineWidth',3)
+
+plot(ax2,0.133*[0 400],[1 1],'k-.','LineWidth',2)
+xlim([0 20])
+ylim([0.5 150])
+xticklabels([])
+yticklabels([])
+Yrule = get(ax2,'YRuler');
+Yrule.MinorTickValues = [0.1:0.1:0.9 1:9 10:10:100];
+
+
+%% Fraction of layers / holes that form close to vs. far from defects.
+
+eds = [0 3/0.133 1000];
+
+lpd = sqrt(([newlayer.npx]-[newlayer.x]).^2+([newlayer.npy]-[newlayer.y]).^2);
+lnd = sqrt(([newlayer.nnx]-[newlayer.x]).^2+([newlayer.nny]-[newlayer.y]).^2);
+hpd = sqrt(([newhole.npx]-[newhole.x]).^2+([newhole.npy]-[newhole.y]).^2);
+hnd = sqrt(([newhole.nnx]-[newhole.x]).^2+([newhole.nny]-[newhole.y]).^2);
+
+pcol = [230 31 15]/255;
+ncol = [0 115 178]/255;
+
+lpds = histcounts(lpd,eds,'Normalization','probability');
+lnds = histcounts(lnd,eds,'Normalization','probability');
+hpds = histcounts(hpd,eds,'Normalization','probability');
+hnds = histcounts(hnd,eds,'Normalization','probability');
+
+cdp = histcounts(dps,eds,'Normalization','probability');
+cdn = histcounts(dns,eds,'Normalization','probability');
+
+fig = figure('Units','pixels','Position',[440 378 560 540]);
+ax = axes(fig,'Units','pixels','Position',[135 345 305 180],...
+    'FontSize', 24,...
+    'Visible','on','FontName', 'Latin Modern Math','layer','top','box','on',...
+    'TickLength',[0.03 0.03],'LineWidth',2,'YScale','linear');
+
+hold(ax,'on');
+hold on
+bar(ax,[0 2.5],lpds,0.2,'FaceColor',pcol,'LineWidth',3)
+hold on
+bar(ax,[0.5 3],lnds,0.2,'FaceColor',ncol,'LineWidth',3)
+% bar(ax,[1 3.5],cdp,0.2,'FaceColor',pcol,'LineWidth',3)
+% bar(ax,[1.5 4],cdn,0.2,'FaceColor',ncol,'LineWidth',3)
+
+ylim([0 1])
+xlim([-0.5 4.5])
+yticks(0:0.25:1)
+xticks([])
+yticklabels([])
+ax2 = axes(fig,'Units','pixels','Position',[135 135 305 180],...
+    'FontSize', 24,...
+    'Visible','on','FontName', 'Latin Modern Math','layer','top','box','on',...
+    'TickLength',[0.03 0.03],'LineWidth',2,'YScale','linear');
+hold(ax2,'on');
+
+hold on
+bar(ax2,[0 2.5],hpds,0.2,'FaceColor',pcol,'LineWidth',3)
+hold on
+bar(ax2,[0.5 3],hnds,0.2,'FaceColor',ncol,'LineWidth',3)
+% bar(ax2,[1 3.5],cdp,0.2,'FaceColor',pcol,'LineWidth',3)
+% bar(ax2,[1.5 4],cdn,0.2,'FaceColor',ncol,'LineWidth',3)
+
+ylim([0 1])
+xlim([-0.5 4.5])
+yticks(0:0.25:1)
+yticklabels([])
+xticks([])
+
+%% Distribution unnormalized
+
+pws = 2:10;
+eds = [0 2.^pws];
+
+bcents1 = eds(2:end);
+bcents2 = eds(1:end-1);
+bcents = (bcents1+bcents2)/2;
+
+lpd = sqrt(([newlayer.npx]-[newlayer.x]).^2+([newlayer.npy]-[newlayer.y]).^2);
+lnd = sqrt(([newlayer.nnx]-[newlayer.x]).^2+([newlayer.nny]-[newlayer.y]).^2);
+hpd = sqrt(([newhole.npx]-[newhole.x]).^2+([newhole.npy]-[newhole.y]).^2);
+hnd = sqrt(([newhole.nnx]-[newhole.x]).^2+([newhole.nny]-[newhole.y]).^2);
+
+pcol = [230 31 15]/255;
+ncol = [0 115 178]/255;
+
+lpds = histcounts(lpd,eds,'Normalization','pdf');
+lnds = histcounts(lnd,eds,'Normalization','pdf');
+hpds = histcounts(hpd,eds,'Normalization','pdf');
+hnds = histcounts(hnd,eds,'Normalization','pdf');
+
+lpderrs = lpds.*(1-lpds)/numel(newlayer);
+lnderrs = lnds.*(1-lnds)/numel(newlayer);
+hpderrs = hpds.*(1-hpds)/numel(newhole);
+hnderrs = hnds.*(1-hnds)/numel(newhole);
+
+cdp = histcounts(dps,eds,'Normalization','pdf');
+cdn = histcounts(dns,eds,'Normalization','pdf');
+
+cdperr = cdp.*(1-cdp)/numel(dps);
+cdnerr = cdn.*(1-cdn)/numel(dns);
+
+fig = figure('Units','pixels','Position',[440 378 560 540]);
+ax = axes(fig,'Units','pixels','Position',[135 345 305 180],...
+    'FontSize', 24,...
+    'Visible','on','FontName', 'Latin Modern Math','layer','top','box','on',...
+    'TickLength',[0.03 0.03],'LineWidth',2,'YScale','log');
+
+hold(ax,'on');
+hold on
+errorbar(ax,0.133*bcents,lpds,lpderrs,'Color',pcol,'LineWidth',3)
+%errorbar(ax,0.133*bcents,lnds,lnderrs,'Color',ncol,'LineWidth',3)
+
+xticks([0 5 10 15 20])
+xlim([0 20])
+ylim([1e-5 1e-1])
+
+xticklabels([]);
+yticklabels([]);
+Yrule = get(ax,'YRuler');
+Yrule.MinorTickValues = [0.1:0.1:0.9 1:9 10:10:100];
+
+%% Distribution Standard normalization
+
+pws = 2:10;
+eds = 0.133*[0 2.^pws];
+
+eds = 0:4:140;
+
+bcents1 = eds(2:end);
+bcents2 = eds(1:end-1);
+bcents = (bcents1+bcents2)/2;
+
+pcol = [230 31 15]/255;
+ncol = [0 115 178]/255;
+
+lpds = histcounts(0.133*[newlayer.pd],eds,'Normalization','probability');
+lnds = histcounts(0.133*[newlayer.nd],eds,'Normalization','probability');
+hpds = histcounts(0.133*[newhole.pd],eds,'Normalization','probability');
+hnds = histcounts(0.133*[newhole.nd],eds,'Normalization','probability');
+
+lpderrs = lpds.*(1-lpds)/numel(newlayer);
+lnderrs = lnds.*(1-lnds)/numel(newlayer);
+hpderrs = hpds.*(1-hpds)/numel(newhole);
+hnderrs = hnds.*(1-hnds)/numel(newhole);
+
+
+fig = figure('Units','pixels','Position',[440 378 560 540]);
+ax = axes(fig,'Units','pixels','Position',[135 345 305 180],...
+    'FontSize', 24,...
+    'Visible','on','FontName', 'Latin Modern Math','layer','top','box','on',...
+    'TickLength',[0.03 0.03],'LineWidth',2,'YScale','log');
+
+hold(ax,'on');
+hold on
+r = bcents;
+dr = (bcents1 - bcents2);
+rho = (3168/1863)/((1024*768*0.133^2));
+rho = 1/((1024*768*0.133^2));
+
+plot(ax,bcents,lpds./(2*pi*r.*dr*rho),'Color',pcol,'LineWidth',3)
+plot(ax,bcents,lnds./(2*pi*r.*dr*rho),'Color',ncol,'LineWidth',3)
+% 
+% xticks([0 5 10 15 50])
+xlim([0 20])
+xticklabels([]);
+% yticklabels([]);
+% Yrule = get(ax,'YRuler');
+% Yrule.MinorTickValues = [0.1:0.1:0.9 1:9 10:10:100];
+
+
+ax2 = axes(fig,'Units','pixels','Position',[135 135 305 180],...
+    'FontSize', 24,...
+    'Visible','on','FontName', 'Latin Modern Math','layer','top','box','on',...
+    'TickLength',[0.03 0.03],'LineWidth',2,'YScale','log');
+hold(ax2,'on');
+
+plot(ax2,bcents,hpds./(2*pi*r.*dr*rho),'Color',pcol,'LineWidth',3)
+plot(ax2,bcents,hnds./(2*pi*r.*dr*rho),'Color',ncol,'LineWidth',3)
+
+xlim([0 20])
+% ylim([0.5 150])
+% xticklabels([])
+% yticklabels([])
+% Yrule = get(ax2,'YRuler');
+% Yrule.MinorTickValues = [0.1:0.1:0.9 1:9 10:10:100];

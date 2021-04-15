@@ -20,7 +20,7 @@ addpath('../../Director field');
     
     for f = 1:numel(fpaths)
         fpath = fpaths{f};
-        adefs = alldefects(fpath);
+        load([fpath 'adefs.mat'],'adefs');
         ids = unique([adefs.id]);
 
         for id = ids

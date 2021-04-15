@@ -1,6 +1,7 @@
 function laychs = layervsdef(datapath)
 %%
 addpath('/Users/kcopenhagen/Documents/MATLAB/gitstuff/Monolayer/Height analysis/Layer formation/IDing Layers');
+addpath('/Users/kcopenhagen/Documents/MATLAB/gitstuff/Monolayer/Director field/');
 folders = dir(datapath);
 dirFlags = [folders.isdir];
 folders = folders(dirFlags);
@@ -19,12 +20,15 @@ for f = 1:numel(folders)
     
     fpath = [folders(f).folder '/' folders(f).name '/'];
     load([fpath 'adefs.mat'],'adefs');
-    
+    %adefs = alldefects(fpath);
     for t = 2:max([adefs.ts])
         laych = LayerChanges(fpath,t);
         del = [];
-        holes = loaddata(fpath,t-1,'manuallayers','int8')==0;
-        
+        try
+            holes = loaddata(fpath,t-1,'covid_layers','int8')==0;
+        catch
+            holes = loaddata(fpath,t-1,'mlays','int8')==0;
+        end
         CC = bwconncomp(holes);
         P = regionprops(CC,'PixelIdxList','MinorAxisLength');
         Ps = P([P.MinorAxisLength]<39);

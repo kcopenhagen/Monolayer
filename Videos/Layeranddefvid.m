@@ -8,26 +8,21 @@ function Layeranddefvid(fpath)
     
     v = VideoWriter([fpath 'Layerswithdefvid.mp4'],'MPEG-4');
     v.Quality = 95;
-    v.FrameRate = 20;
+    v.FrameRate = 12;
     open(v);
     
     f = figure('Units','pixels','Position',[0 0 1024/2 768/2],'PaperUnits','points',...
         'PaperSize',[1024/2 768/2],'visible','off');
     ax = axes(f,'Units','pixels','Position',[0 0 1024/2 768/2]);
     
-    files = dir([fpath 'Laser/']);
-    dirFlags = [files.isdir];
-    files = files(~dirFlags);
-    
-    del = [];
-    for i = 1:numel(files)
-        if files(i).name(1) == '.'
-            del = [del; i];
-        end
-    end
-    files(del) = [];
+    files = getts(fpath);
     
     N = numel(files);
+    l1 = laserdata(fpath,1);
+    l1 = l1./imgaussfilt(l1,64);
+    l1 = 3*normalise(l1)-0.4;
+    meanl1 = mean(l1,'all');
+    
     %adefs = alldefects(fpath);
     for t = 1:N
         axes(ax);
@@ -35,11 +30,11 @@ function Layeranddefvid(fpath)
         l = laserdata(fpath,t);
         l = l./imgaussfilt(l,64);
         l = 3*normalise(l)-0.4;
-        lays = loaddata(fpath,t,'manuallayers','int8');
-        lays = round(imgaussfilt(lays,3));
-        height = heightdata(fpath,t);
-        height = height - imgaussfilt(height,128)+0.3;
-        im = real2rgb(height,myxocmap,[0 0.5]);
+        meanl = mean(l,'all');
+        l = l - (meanl - meanl1);
+        lays = loaddata(fpath,t,'covid_layers','int8');
+
+        im = real2rgb(lays,flipud(myxocmap),[0 2]);
         imr = im(:,:,1);
         img = im(:,:,2);
         imb = im(:,:,3);
@@ -108,17 +103,19 @@ function Layeranddefvid(fpath)
             end
         end
 
-        set(ax,'XDir','reverse');
-        set(ax,'YDir','normal');
+        set(ax,'XDir','normal');
+        set(ax,'YDir','reverse');
 
         F = getframe(f);
         fr = tandscalebartext(fpath,t,F.cdata);
-        writeVideo(v, fr);
-        
-        
+        %fr = imresize(fr,0.5);
+        fname = sprintf('images/%d.png',t-1);
+        imwrite(fr,fname);
+%        writeVideo(v, fr);
+
     end
     close(f)
     close(v);
-    
+
 end
     
