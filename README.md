@@ -51,6 +51,34 @@ Analysis code for myxo monolayers
       * *Outputs:*
          * Saves local order field into experiment folder /analysis/order/ as an array of floats.
 ---
+   * =mS = calcS(A)=
+      * *Inputs:*
+         * A - array to calculate order of.
+      * *Outputs:*
+         * mS - average order of the array in A.
+---
+
+   * =S = Sfield(dfield,a)=
+      * *Inputs:*
+         * dfield - director field to calculate the order field of.
+         * a - size of box around each pixel to use for order calculations.
+      * *Outputs:*
+         * S - order field of =dfield= with box size =a=.
+   * =S0 = SPhysLC(dfield,a)=
+      * *Inputs:*
+         * dfield - director field to calculate the order field of.
+         * a - size of box to break image into before calculating order of each box.
+
+---
+
+   * =defSprofile=
+      * Calculates average S around all defects of each charge.
+
+---
+
+   * =Svideo=
+      * Creates a movie of S for different box sizes.
+
 # Defects
    * =defs = finddefects(fpath,t)=
       * *Description:*
@@ -123,6 +151,51 @@ Analysis code for myxo monolayers
          * pnr - all distances between +/- defect pairs
          * pnn - all distances between -/- defect pairs
          * dr - distances between randomly generated pixel points for normalization.
+
+  * =numbers=
+      * Prints out the total number of tracked defect of each charge.
+      * Also the total number of frames within all defect tracks.
+
+---
+
+   * =defectinteractions_angles(datapath)=
+      * Calculate and display orientational relationship between all pairs of defects.
+   * =[ppr,pnr,nnr,dr] = defectinteractions_distance(datapath)=
+      * Calculates g(r) the distribution of distances between pairs of defects of each charge combination.
+      * Plots the interaction energy from that for each type of pair (like, or opposite charges).
+   * =defsarounddefs=
+      * Plots cartoon of defect orientation between oppositely charged pairs at different location around eachother.
+    
+---
+
+   * =[dt,dr,dq] = defmsd(datapath)=
+      * *Inputs:*
+         * datapath - path to all experiments.
+      * *Outputs:*
+         * dt - time change.
+         * dr - square displacement.
+         * qq - defect charge.
+      * Each i-th entry in the three outputs go together.
+   * =plotmsd=
+      * Runs =defmsd= and plots the output.
+   * =plotdefsdheatmap=
+      * Similar to =plotmsd= but plots a heatmap of all square displacements instead of the mean.
+   * =directedmotion(datapath)=
+      * Plots distributions of the angle between the direction a defect moves and it's axis of symmetry.
+      * Also plots a histogram of the defect speed.
+   * =defectvelcorr=
+      * Autocorrelation of defect symmetry axes vs time.
+   * =defectvelcorrall=
+      * Autocorrelation of defect symmetry axes as well as defect velocity.
+      * Averaged over different time windows and plotted.
+
+---
+
+   * =defectSprofile(datapath)=
+      * Calculates the average order around each type of defect.
+      * Plots the average order profile around each type of defect, or averaged over angles (S vs. r).
+   * =defectshape=
+      * Uses the average director field around each type of defect to find the average deviation from perfectly oriented defects.
 ---
 # Layers
 
